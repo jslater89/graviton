@@ -11,13 +11,14 @@ import (
 const testDB = "graviton-test"
 
 func generateTestData() {
+	graviton.Init()
 	InitMongo("localhost", testDB)
 
 	blueHydrometer := &Hydrometer{
-		ID:             bson.NewObjectId(),
-		Name:           "Blue Hydrometer",
-		Description:    "A fake hydrometer with blue plastic.",
-		CurrentBatchID: graviton.EmptyID(),
+		ID:          bson.NewObjectId(),
+		Name:        "Blue Hydrometer",
+		Description: "A fake hydrometer with blue plastic.",
+		// test auto-fill current batch ID
 	}
 	greenHydrometer := &Hydrometer{
 		ID:             bson.NewObjectId(),
@@ -101,6 +102,8 @@ func getTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {
 	db.batchCollection.Find(bson.M{"stringId": "20171101-flueseason"}).One(flueSeason)
 	db.batchCollection.Find(bson.M{"stringId": "20171101-hopforward"}).One(hopForward)
 
+	fmt.Println(blueHydrometer)
+	fmt.Println(greenHydrometer)
 	fmt.Println(flueSeason)
 	fmt.Println(hopForward)
 
