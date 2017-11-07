@@ -36,6 +36,10 @@ func ensureIndices() {
 	db.batchCollection.EnsureIndexKey("-lastUpdate")
 	db.batchCollection.EnsureIndexKey("hydrometer")
 	db.batchCollection.EnsureIndexKey("active")
+	db.batchCollection.EnsureIndex(mgo.Index{
+		Key:    []string{"stringId"},
+		Unique: true,
+	})
 
 	db.hydrometerCollection.EnsureIndex(mgo.Index{
 		Key:    []string{"name"},
