@@ -27,8 +27,8 @@ func (b *Batch) Save() error {
 	return nil
 }
 
-func QueryBatches(query bson.M) ([]Batch, error) {
-	batches := []Batch{}
+func QueryBatches(query bson.M) ([]*Batch, error) {
+	batches := []*Batch{}
 	err := db.batchCollection.Find(query).All(&batches)
 	return batches, err
 }

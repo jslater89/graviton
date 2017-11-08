@@ -9,6 +9,8 @@ import (
 	"github.com/jslater89/graviton"
 )
 
+// Batch tests happen to cover all the current hydrometer features, too.
+
 func TestSetHydrometer(t *testing.T) {
 	generateTestData()
 

@@ -19,8 +19,8 @@ func (h *Hydrometer) Save() error {
 	return nil
 }
 
-func QueryHydrometers(query bson.M) ([]Hydrometer, error) {
-	hydrometers := []Hydrometer{}
+func QueryHydrometers(query bson.M) ([]*Hydrometer, error) {
+	hydrometers := []*Hydrometer{}
 	err := db.hydrometerCollection.Find(query).All(&hydrometers)
 	return hydrometers, err
 }
