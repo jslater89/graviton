@@ -27,6 +27,25 @@ func (b *Batch) Save() error {
 	return nil
 }
 
+func SingleBatch(query bson.M) (*Batch, error) {
+	batches, err := QueryBatches(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Allow the user to decide in this case
+	if len(batches) > 1 {
+		return batches[0], errors.New("single batch query returned multiple batches")
+	}
+
+	if len(batches) < 1 {
+		return nil, errors.New("not found")
+	}
+
+	return batches[0], nil
+}
+
 func QueryBatches(query bson.M) ([]*Batch, error) {
 	batches := []*Batch{}
 	err := db.batchCollection.Find(query).All(&batches)
@@ -40,7 +59,6 @@ func AddBatch(b Batch) (*Batch, error) {
 		UniqueID:        b.UniqueID,
 		Active:          true,
 		HydrometerID:    graviton.EmptyID(),
-		InitialReading:  b.InitialReading,
 		GravityReadings: []GravityReading{},
 	}
 

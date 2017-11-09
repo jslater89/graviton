@@ -7,16 +7,15 @@ import (
 )
 
 type Batch struct {
-	ID              bson.ObjectId    `json:"id,omitempty" bson:"_id,omitempty"`
-	RecipeName      string           `json:"recipe" bson:"recipe"`
-	UniqueID        string           `json:"stringId" bson:"stringId"`
-	HydrometerID    bson.ObjectId    `json:"hydrometer" bson:"hydrometer"`
-	InitialReading  GravityReading   `json:"initialReading,omitempty" bson:"initialReading,omitempty"`
-	GravityReadings []GravityReading `json:"readings" bson:"readings"`
-	StartDate       time.Time        `json:"startDate" bson:"startDate"`
-	LastUpdate      time.Time        `json:"lastUpdate" bson:"lastUpdate"`
+	ID              bson.ObjectId    `bson:"_id,omitempty"`
+	RecipeName      string           `bson:"recipe"`
+	UniqueID        string           `bson:"stringId"`
+	HydrometerID    bson.ObjectId    `bson:"hydrometer"`
+	GravityReadings []GravityReading `bson:"readings"`
+	StartDate       time.Time        `bson:"startDate"`
+	LastUpdate      time.Time        `bson:"lastUpdate"`
 
-	Active bool `json:"active" bson:"active"`
+	Active bool `bson:"active"`
 }
 
 type GravityReading struct {
@@ -29,8 +28,8 @@ type GravityReading struct {
 }
 
 type Hydrometer struct {
-	ID             bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
-	Name           string        `bson:"name" json:"name"`
-	Description    string        `bson:"description" json:"description"`
-	CurrentBatchID bson.ObjectId `bson:"batch" json:"batch"`
+	ID             bson.ObjectId `bson:"_id,omitempty"`
+	Name           string        `bson:"name"`
+	Description    string        `bson:"description"`
+	CurrentBatchID bson.ObjectId `bson:"batch"`
 }

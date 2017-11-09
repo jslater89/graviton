@@ -5,6 +5,7 @@ import (
 	"github.com/jslater89/graviton/api"
 	"github.com/jslater89/graviton/data"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -32,7 +33,10 @@ func main() {
 	e.PUT("/api/v1/hydrometers/:id", api.EditHydrometer)
 	e.DELETE("/api/v1/hydrometers/:id", api.DeleteHydrometer)
 
-	e.Start("localhost:9000")
+	e.Use(middleware.CORS())
+	e.Use(middleware.Logger())
+
+	e.Start("localhost:10000")
 }
 
 func ensureDemoData() {

@@ -1,7 +1,11 @@
 package data
 
-import "gopkg.in/mgo.v2/bson"
-import "github.com/jslater89/graviton"
+import (
+	"errors"
+
+	"github.com/jslater89/graviton"
+	"gopkg.in/mgo.v2/bson"
+)
 
 func (h *Hydrometer) Save() error {
 	if err := h.verify(); err != nil {
@@ -23,6 +27,25 @@ func QueryHydrometers(query bson.M) ([]*Hydrometer, error) {
 	hydrometers := []*Hydrometer{}
 	err := db.hydrometerCollection.Find(query).All(&hydrometers)
 	return hydrometers, err
+}
+
+func SingleHydrometer(query bson.M) (*Hydrometer, error) {
+	hydrometers, err := QueryHydrometers(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Allow the user to decide in this case
+	if len(hydrometers) > 1 {
+		return hydrometers[0], errors.New("single hydrometer query returned multiple hydrometers")
+	}
+
+	if len(hydrometers) < 1 {
+		return nil, errors.New("not found")
+	}
+
+	return hydrometers[0], nil
 }
 
 func (h *Hydrometer) verify() error {
