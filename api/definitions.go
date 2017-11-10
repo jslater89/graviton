@@ -17,6 +17,7 @@ type Batch struct {
 	GravityReadings *[]data.GravityReading `json:"readings"`
 	LatestReading   data.GravityReading    `json:"latestReading"`
 	Attenuation     float64                `json:"attenuation"`
+	ABV             float64                `json:"abv"`
 	StartDate       time.Time              `json:"startDate"`
 	LastUpdate      time.Time              `json:"lastUpdate"`
 	Active          bool                   `json:"active"`
@@ -67,14 +68,20 @@ func convertDatabaseBatch(b *data.Batch, lightweight bool) (*Batch, error) {
 		}
 
 		firstReading := b.GravityReadings[0]
+		currentReading := converted.LatestReading
 
-		gravityChange := firstReading.Gravity - converted.LatestReading.Gravity
-		gravityBaseline := firstReading.Gravity - 1.0
+		og := firstReading.Gravity
+		cg := currentReading.Gravity
+
+		gravityChange := og - cg
+		gravityBaseline := og - 1.0
 
 		converted.Attenuation = 1 - ((gravityBaseline - gravityChange) / gravityBaseline)
+		converted.ABV = ((76.08 * (og - cg) / (1.775 - og)) * (cg / 0.794))
 	} else {
 		converted.GravityReadings = &[]data.GravityReading{}
 		converted.Attenuation = 0
+		converted.ABV = 0
 	}
 
 	hydrometer, err := data.SingleHydrometer(bson.M{"_id": b.HydrometerID})

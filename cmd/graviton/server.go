@@ -21,8 +21,9 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/api/v1/auth/google/login", api.GoogleAuthLogin)
-	e.GET("/api/v1/auth/google/callback", api.GoogleAuthCallback)
+	e.GET("/api/v1/auth/google/login", auth.GoogleAuthLogin)
+	e.GET("/api/v1/auth/google/callback", auth.GoogleAuthCallback)
+	e.GET("/api/v1/auth/me", auth.GetSelf)
 
 	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
 	e.POST("/api/v1/batches", api.NewBatch)    // takes a BatchParam
@@ -42,7 +43,11 @@ func main() {
 	e.PUT("/api/v1/hydrometers/:id", api.EditHydrometer)
 	e.DELETE("/api/v1/hydrometers/:id", api.DeleteHydrometer) // sets a 'deleted' flag
 
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		Skipper:      middleware.DefaultCORSConfig.Skipper,
+		AllowOrigins: []string{"http://localhost:8080"},
+		AllowMethods: middleware.DefaultCORSConfig.AllowMethods,
+	}))
 	e.Use(middleware.Logger())
 
 	e.Start("localhost:10000")

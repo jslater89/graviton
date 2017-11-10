@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/jslater89/graviton"
+	"github.com/jslater89/graviton/auth"
 	"github.com/jslater89/graviton/data"
 	"github.com/labstack/echo"
 	"go.uber.org/zap"
@@ -9,6 +10,10 @@ import (
 )
 
 func QueryBatches(c echo.Context) error {
+	if !auth.IsAuthorized(c, "/api/v1/batches") {
+		return nil
+	}
+
 	batches, err := data.QueryBatches(bson.M{})
 
 	if err != nil {
