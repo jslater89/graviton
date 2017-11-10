@@ -15,12 +15,12 @@ func main() {
 	data.InitMongo("localhost", "graviton")
 
 	e := echo.New()
-	e.GET("/api/v1/batches", api.QueryBatches)
-	e.POST("/api/v1/batches", api.NewBatch)
+	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
+	e.POST("/api/v1/batches", api.NewBatch)    // takes a BatchParam
 
-	e.GET("/api/v1/batches/:id", api.GetBatch)
-	e.PUT("/api/v1/batches/:id", api.EditBatch)
-	e.POST("/api/v1/batch/:id/finish", api.FinishBatch)
+	e.GET("/api/v1/batches/:id", api.GetBatch)          // returns full batch, including all readings
+	e.PUT("/api/v1/batches/:id", api.EditBatch)         // takes a BatchParam, use to start batches
+	e.POST("/api/v1/batch/:id/finish", api.FinishBatch) // sets a batch inactive, releasing its hydrometer and stopping readings
 
 	// Called by hydrometers; the API finds the correct
 	// batch by getting the correct hydrometer.
@@ -31,7 +31,7 @@ func main() {
 
 	e.GET("/api/v1/hydrometers/:id", api.GetHydrometer)
 	e.PUT("/api/v1/hydrometers/:id", api.EditHydrometer)
-	e.DELETE("/api/v1/hydrometers/:id", api.DeleteHydrometer)
+	e.DELETE("/api/v1/hydrometers/:id", api.DeleteHydrometer) // sets a 'deleted' flag
 
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
