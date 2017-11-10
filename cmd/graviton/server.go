@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/jslater89/graviton"
 	"github.com/jslater89/graviton/api"
+	"github.com/jslater89/graviton/auth"
+	"github.com/jslater89/graviton/config"
 	"github.com/jslater89/graviton/data"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -11,10 +13,17 @@ import (
 )
 
 func main() {
+	config.Load(nil)
+	config := config.GetConfig()
 	graviton.Init()
-	data.InitMongo("localhost", "graviton")
+	auth.InitOauth()
+	data.InitMongo(config.MongoAddress, config.DBName)
 
 	e := echo.New()
+
+	e.GET("/api/v1/auth/google/login", api.GoogleAuthLogin)
+	e.GET("/api/v1/auth/google/callback", api.GoogleAuthCallback)
+
 	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
 	e.POST("/api/v1/batches", api.NewBatch)    // takes a BatchParam
 

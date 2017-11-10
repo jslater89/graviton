@@ -14,3 +14,4 @@
 .glide/
 cmd/graviton/debug
 cmd/graviton/graviton
+cmd/graviton/config.toml
