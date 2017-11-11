@@ -23,7 +23,8 @@ func main() {
 
 	e.GET("/api/v1/auth/google/login", auth.GoogleAuthLogin)
 	e.GET("/api/v1/auth/google/callback", auth.GoogleAuthCallback)
-	e.GET("/api/v1/auth/me", auth.GetSelf)
+	e.GET("/api/v1/auth/logout", auth.Logout)
+	e.GET("/api/v1/users/me", auth.GetSelf)
 
 	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
 	e.POST("/api/v1/batches", api.NewBatch)    // takes a BatchParam

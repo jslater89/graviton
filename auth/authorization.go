@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"strings"
 	"time"
 
@@ -44,20 +45,93 @@ func IsAuthorized(c echo.Context, path string) bool {
 	}
 
 	if !checkSessionExpiration(sess) {
-		graviton.Logger.Info("Session expired")
+		graviton.Logger.Info("Session expired for user", zap.String("Email", sess.User.Email))
 		deleteSession(bearer)
 		c.JSON(401, bson.M{"error": "login expired"})
+		return false
 	}
 
-	// TODO: user authorized for path? Check role permissions for exact match;
-	// if not, use rule with the longest prefix
-	// canRead == GET, canWrite == everything else
-	// c.JSON(403, bson.M{"error": "not authorized for resource"})
+	user := &sess.User
 
-	user := sess.User
+	writeRequest := (c.Request().Method != http.MethodGet)
+	if !checkUserPermissions(user, writeRequest, path) {
+		graviton.Logger.Info("User not authorized for resource", zap.String("Email", user.Email), zap.String("Path", path))
+		c.JSON(403, bson.M{"error": "not authorized for resource"})
+		return false
+	}
+
 	graviton.Logger.Info("User authorized for path", zap.String("User", user.Email), zap.String("Path", path))
 	sess.ExpiresAt = time.Now().Add(1 * time.Hour)
 	saveSession(*sess)
 
 	return true
+}
+
+func checkUserPermissions(user *User, write bool, path string) bool {
+	roles, err := getUserRoles(user)
+
+	if err != nil {
+		graviton.Logger.Warn("User role lookup error", zap.String("Email", user.Email), zap.Error(err))
+		return false
+	}
+
+	permissions := []Permission{}
+	for _, role := range roles {
+		permissions = append(permissions, role.Permissions...)
+	}
+
+	bestMatchLength := 0
+	var bestPermission Permission
+
+	for _, permission := range permissions {
+		if strings.HasPrefix(path, permission.Path) && len(permission.Path) > bestMatchLength {
+			bestMatchLength = len(permission.Path)
+			bestPermission = permission
+
+			// Stop searching on exact match
+			if bestPermission.Path == path {
+				break
+			}
+		}
+	}
+
+	return write && bestPermission.CanWrite || !write && bestPermission.CanRead
+}
+
+func verifyBaseRoles() error {
+	n, err := db.roleCollection.Find(bson.M{"name": "Viewer"}).Count()
+
+	if err == nil && n > 0 {
+		return nil
+	}
+	graviton.Logger.Info("Making default roles")
+
+	viewerRole := Role{
+		ID:   bson.NewObjectId(),
+		Name: "Viewer",
+		Permissions: []Permission{
+			Permission{
+				CanRead:  true,
+				CanWrite: false,
+				Path:     "/",
+			},
+		},
+	}
+
+	db.roleCollection.UpsertId(viewerRole.ID, viewerRole)
+
+	editorRole := Role{
+		ID:   bson.NewObjectId(),
+		Name: "Editor",
+		Permissions: []Permission{
+			Permission{
+				CanRead:  true,
+				CanWrite: true,
+				Path:     "/",
+			},
+		},
+	}
+
+	db.roleCollection.UpsertId(editorRole.ID, editorRole)
+	return nil
 }

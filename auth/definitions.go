@@ -9,7 +9,9 @@ import (
 )
 
 type Role struct {
-	Permissions []Permission `bson:"permissions" json:"permissions"`
+	ID          bson.ObjectId `bson:"_id" json:"id"`
+	Name        string        `bson:"name" json:"name"`
+	Permissions []Permission  `bson:"permissions" json:"permissions"`
 }
 
 type Permission struct {
@@ -27,7 +29,7 @@ type User struct {
 type APIUser struct {
 	ID    bson.ObjectId `json:"_id"`
 	Email string        `json:"email"`
-	Roles []Role        `json:"roles"`
+	Roles []*Role       `json:"roles"`
 }
 
 type Session struct {
@@ -75,6 +77,13 @@ func saveSession(session Session) error {
 	return err
 }
 
+func getUser(id bson.ObjectId) (*User, error) {
+	user := &User{}
+	err := db.userCollection.Find(bson.M{"_id": id}).One(user)
+
+	return user, err
+}
+
 func getOrCreateUser(email string) (*User, error) {
 	user := &User{}
 	err := db.userCollection.Find(bson.M{"email": email}).One(user)
@@ -82,6 +91,14 @@ func getOrCreateUser(email string) (*User, error) {
 	if err != nil && err != mgo.ErrNotFound {
 		return nil, err
 	} else if err == mgo.ErrNotFound {
+		role := &Role{}
+		err = db.roleCollection.Find(bson.M{"name": "Viewer"}).One(role)
+
+		if err != nil {
+			return nil, err
+		}
+
+		user.Roles = []bson.ObjectId{role.ID}
 		user.Email = email
 		user.ID = bson.NewObjectId()
 		_, err = db.userCollection.UpsertId(user.ID, user)
@@ -92,4 +109,35 @@ func getOrCreateUser(email string) (*User, error) {
 	}
 
 	return user, nil
+}
+
+func convertDatabaseUser(user *User) (*APIUser, error) {
+	apiUser := &APIUser{
+		ID:    user.ID,
+		Email: user.Email,
+	}
+
+	roles, err := getUserRoles(user)
+	if err != nil {
+		return nil, err
+	}
+
+	apiUser.Roles = roles
+	return apiUser, nil
+}
+
+func getOwnUser(token string) (*APIUser, error) {
+	session, err := getSession(token)
+	if err != nil {
+		return nil, err
+	}
+
+	return convertDatabaseUser(&session.User)
+}
+
+func getUserRoles(user *User) ([]*Role, error) {
+	roles := []*Role{}
+	err := db.roleCollection.Find(bson.M{"_id": bson.M{"$in": user.Roles}}).All(&roles)
+
+	return roles, err
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jslater89/graviton"
+	"go.uber.org/zap"
 
 	"github.com/labstack/echo"
 	"github.com/markbates/goth/gothic"
@@ -44,12 +45,43 @@ func GoogleAuthCallback(c echo.Context) error {
 }
 
 func GetSelf(c echo.Context) error {
-	return nil
+	token := extractBearer(c)
+
+	if token == "" || !bson.IsObjectIdHex("token") {
+		return c.JSON(400, bson.M{"error": "invalid session"})
+	}
+
+	session, err := getSession(token)
+
+	if err != nil {
+		return c.JSON(400, bson.M{"error": "invalid session"})
+	}
+
+	user, err := convertDatabaseUser(&session.User)
+
+	if err != nil {
+		graviton.Logger.Warn("Could not look up roles for user", zap.String("Email", user.Email), zap.Error(err))
+		return c.JSON(502, bson.M{"error": "database lookup error"})
+	}
+
+	return c.JSON(200, user)
+}
+
+func Logout(c echo.Context) error {
+	token := extractBearer(c)
+	err := deleteSession(token)
+
+	if err != nil {
+		graviton.Logger.Warn("Error deleting session", zap.String("Token", token), zap.Error(err))
+		return c.JSON(502, bson.M{"error": "unable to delete session"})
+	}
+
+	graviton.Logger.Info("Session ended", zap.String("Token", token))
+	return c.JSON(200, bson.M{"status": "ok"})
 }
 
 func getCookie(token string) *http.Cookie {
 	return &http.Cookie{
-		Domain:  "localhost:10000",
 		Name:    "graviton_bearer",
 		Value:   token,
 		Expires: time.Now().Add(24 * time.Hour),

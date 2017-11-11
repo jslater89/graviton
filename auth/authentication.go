@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/jslater89/graviton"
@@ -49,6 +48,7 @@ func InitOauth() {
 	}
 
 	db.mongoDB = db.session.DB(config.GetConfig().DBName)
+
 	db.gothicCollection = db.mongoDB.C("oauth_store")
 
 	db.sessionCollection = db.mongoDB.C("sessions")
@@ -56,6 +56,7 @@ func InitOauth() {
 	db.roleCollection = db.mongoDB.C("roles")
 
 	initLocalSessionStore(3600)
+	verifyBaseRoles()
 
 	store := mongostore.NewMongoStore(db.gothicCollection, 300, true, []byte("secret-key"))
 	db.mongoStore = store
@@ -67,15 +68,13 @@ func HandleUser(c echo.Context, user goth.User) bson.ObjectId {
 	var sess *Session
 	var err error
 	var sessionID bson.ObjectId
-	authHeader := c.Request().Header.Get("Authorization")
-	splitHeader := strings.Split(authHeader, " ")
+	sessionString := extractBearer(c)
 
-	if len(splitHeader) != 2 {
+	if !bson.IsObjectIdHex(sessionString) {
 		graviton.Logger.Info("Bad auth header")
 		sessionID = bson.NewObjectId()
 	} else {
-		bearer := splitHeader[1]
-		sessionID = bson.ObjectIdHex(bearer)
+		sessionID = bson.ObjectIdHex(sessionString)
 		sess, err = getSession(sessionID.Hex())
 	}
 
