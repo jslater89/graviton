@@ -10,7 +10,7 @@ import (
 )
 
 func QueryBatches(c echo.Context) error {
-	if !auth.IsAuthorized(c, "/api/v1/batches") {
+	if !auth.IsAuthorized(c, "/batches") {
 		return nil
 	}
 
@@ -29,7 +29,7 @@ func QueryBatches(c echo.Context) error {
 }
 
 func GetBatch(c echo.Context) error {
-	if !auth.IsAuthorized(c, "/api/v1/batches") {
+	if !auth.IsAuthorized(c, "/batches") {
 		return nil
 	}
 
