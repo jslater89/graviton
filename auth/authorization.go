@@ -56,6 +56,8 @@ func IsAuthorized(c echo.Context, path string) bool {
 
 	user := sess.User
 	graviton.Logger.Info("User authorized for path", zap.String("User", user.Email), zap.String("Path", path))
+	sess.ExpiresAt = time.Now().Add(1 * time.Hour)
+	saveSession(*sess)
 
 	return true
 }

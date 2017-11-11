@@ -22,7 +22,7 @@ import (
 
 type database struct {
 	session           *mgo.Session
-	db                *mgo.Database
+	mongoDB           *mgo.Database
 	gothicCollection  *mgo.Collection
 	sessionCollection *mgo.Collection
 	userCollection    *mgo.Collection
@@ -48,12 +48,14 @@ func InitOauth() {
 		panic(err)
 	}
 
-	db.db = db.session.DB(config.GetConfig().DBName)
-	db.gothicCollection = db.db.C("oauth_store")
+	db.mongoDB = db.session.DB(config.GetConfig().DBName)
+	db.gothicCollection = db.mongoDB.C("oauth_store")
 
-	db.sessionCollection = db.db.C("sessions")
-	db.userCollection = db.db.C("users")
-	db.roleCollection = db.db.C("roles")
+	db.sessionCollection = db.mongoDB.C("sessions")
+	db.userCollection = db.mongoDB.C("users")
+	db.roleCollection = db.mongoDB.C("roles")
+
+	initLocalSessionStore(3600)
 
 	store := mongostore.NewMongoStore(db.gothicCollection, 300, true, []byte("secret-key"))
 	db.mongoStore = store

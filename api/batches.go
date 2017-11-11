@@ -29,6 +29,10 @@ func QueryBatches(c echo.Context) error {
 }
 
 func GetBatch(c echo.Context) error {
+	if !auth.IsAuthorized(c, "/api/v1/batches") {
+		return nil
+	}
+
 	id := c.Param("id")
 
 	if !bson.IsObjectIdHex(id) {
