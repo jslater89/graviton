@@ -141,6 +141,6 @@ func getTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {
 	return blueHydrometer, greenHydrometer, flueSeason, hopForward
 }
 
-func cleanupTestData() {
+func CleanupTestData() {
 	db.dbRef.DropDatabase()
 }

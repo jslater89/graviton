@@ -34,12 +34,17 @@ func checkSessionExpiration(session *Session) bool {
 	return true
 }
 
+// IsAuthorized checks the session included in the request. If
+// the user is not authorized for the given request, returns false and
+// makes an appropriate response with the context. Otherwise, returns
+// true and defers responses to the caller. If the user is authorized
+// for a given endpoint, IsAuthorized extends the session's expiration.
 func IsAuthorized(c echo.Context, path string) bool {
 	bearer := extractBearer(c)
 	sess, err := getSession(bearer)
 
 	if err != nil {
-		graviton.Logger.Info("Error getting session", zap.Error(err))
+		graviton.Logger.Info("Error getting session", zap.String("Bearer", bearer), zap.Error(err))
 		c.JSON(401, bson.M{"error": "not logged in"})
 		return false
 	}
