@@ -21,17 +21,20 @@ type Batch struct {
 	StartDate       time.Time              `json:"startDate"`
 	LastUpdate      time.Time              `json:"lastUpdate"`
 	Active          bool                   `json:"active"`
+	Archived        bool                   `json:"archived"`
 }
 
 type LightweightBatch struct {
 }
 
 type BatchParam struct {
-	ID         bson.ObjectId   `json:"id"`
-	RecipeName string          `json:"recipe"`
-	UniqueID   string          `json:"stringId"`
-	Hydrometer data.Hydrometer `json:"hydrometer"`
-	StartDate  time.Time       `json:"startDate"`
+	ID         bson.ObjectId `json:"id"`
+	RecipeName string        `json:"recipe"`
+	UniqueID   string        `json:"stringId"`
+	Hydrometer Hydrometer    `json:"hydrometer"`
+	StartDate  time.Time     `json:"startDate"`
+	Active     bool          `json:"active"`
+	Archived   bool          `json:"archived"`
 }
 
 func convertDatabaseBatches(b []*data.Batch, lightweight bool) ([]*Batch, error) {
@@ -94,12 +97,36 @@ func convertDatabaseBatch(b *data.Batch, lightweight bool) (*Batch, error) {
 	return converted, err
 }
 
-func convertAPIBatch(b *Batch) (*data.Batch, error) {
-	return nil, nil
+func convertBatchParam(b *BatchParam) (*data.Batch, error) {
+	batch := &data.Batch{
+		ID:           b.ID,
+		HydrometerID: b.Hydrometer.ID,
+		RecipeName:   b.RecipeName,
+		StartDate:    b.StartDate,
+		UniqueID:     b.UniqueID,
+	}
+	return batch, nil
 }
 
-func convertBatchParam(b *BatchParam) (*data.Batch, error) {
-	return nil, nil
+func mergeBatchParam(param *BatchParam, batch *data.Batch) error {
+	batch.RecipeName = param.RecipeName
+	batch.StartDate = param.StartDate
+	batch.UniqueID = param.UniqueID
+
+	hydrometer, err := data.SingleHydrometer(bson.M{"_id": param.Hydrometer.ID})
+
+	if err != nil {
+		return err
+	}
+
+	return batch.SetHydrometer(hydrometer)
+}
+
+type HydrometerReading struct {
+	HydrometerName string  `json:"name"`
+	Gravity        float64 `json:"gravity"`
+	Temperature    float64 `json:"temperature"`
+	Battery        float64 `json:"battery"`
 }
 
 type Hydrometer struct {
@@ -139,10 +166,11 @@ func convertDatabaseHydrometer(h *data.Hydrometer) (*Hydrometer, error) {
 	return converted, nil
 }
 
-func convertAPIHydrometer(h *Hydrometer) (*data.Hydrometer, error) {
-	return nil, nil
-}
-
 func convertHydrometerParam(h *HydrometerParam) (*data.Hydrometer, error) {
-	return nil, nil
+	hydrometer := &data.Hydrometer{
+		ID:          h.ID,
+		Name:        h.Name,
+		Description: h.Description,
+	}
+	return hydrometer, nil
 }

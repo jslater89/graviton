@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jslater89/graviton"
+	"github.com/jslater89/graviton/config"
 	"github.com/jslater89/graviton/data"
 	"github.com/labstack/echo"
 	"github.com/markbates/goth"
@@ -86,9 +87,24 @@ func TestHandleUser(t *testing.T) {
 	cleanupTestData()
 }
 
+func TestAuthorizeAPIKey(t *testing.T) {
+	graviton.Init()
+	InitOauth(config.GetConfig().MongoAddress, config.GetConfig().GetDBName())
+
+	e := echo.New()
+	req := httptest.NewRequest(echo.POST, "/", strings.NewReader("{}"))
+	req.Header.Set("Authorization", "Bearer "+getOrCreateAPIKey(false))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if !IsAuthorized(c, "/arbitrary/path") {
+		t.Errorf("API key auth not successful")
+	}
+}
+
 func generateTestData() {
 	data.GenerateDemoData()
-	InitOauth()
+	InitOauth(config.GetConfig().MongoAddress, config.GetConfig().GetDBName())
 }
 
 func cleanupTestData() {

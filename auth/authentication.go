@@ -26,6 +26,7 @@ type database struct {
 	sessionCollection *mgo.Collection
 	userCollection    *mgo.Collection
 	roleCollection    *mgo.Collection
+	apiKeyCollection  *mgo.Collection
 	mongoStore        *mongostore.MongoStore // Only for gothic
 }
 
@@ -35,32 +36,31 @@ func GetStore() *mongostore.MongoStore {
 	return db.mongoStore
 }
 
-func InitOauth() {
+func InitOauth(dbAddress string, dbName string) {
 	goth.UseProviders(gplus.New(config.GetConfig().GoogleClientID, config.GetConfig().GoogleSecret, "http://localhost:10000/api/v1/auth/google/callback"))
 	gothic.GetProviderName = func(*http.Request) (string, error) {
 		return "gplus", nil
 	}
 
 	var err error
-	db.session, err = mgo.Dial(config.GetConfig().MongoAddress)
+	db.session, err = mgo.Dial(dbAddress)
 	if err != nil {
 		panic(err)
 	}
-
-	db.mongoDB = db.session.DB(config.GetConfig().DBName)
+	db.mongoDB = db.session.DB(dbName)
 
 	db.gothicCollection = db.mongoDB.C("oauth_store")
-
 	db.sessionCollection = db.mongoDB.C("sessions")
 	db.userCollection = db.mongoDB.C("users")
 	db.roleCollection = db.mongoDB.C("roles")
+	db.apiKeyCollection = db.mongoDB.C("apikey")
 
 	initLocalSessionStore(3600)
 	verifyBaseRoles()
 
 	store := mongostore.NewMongoStore(db.gothicCollection, 300, true, []byte("secret-key"))
-	db.mongoStore = store
 
+	db.mongoStore = store
 	gothic.Store = store
 }
 

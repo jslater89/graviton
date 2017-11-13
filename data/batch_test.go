@@ -38,13 +38,13 @@ func TestSetHydrometer(t *testing.T) {
 		t.Errorf("Stole another batch's hydrometer")
 	}
 
-	cleanupTestData()
+	CleanupTestData()
 }
 
 func TestAddBatch(t *testing.T) {
 	generateTestData()
 
-	batch := Batch{
+	batch := &Batch{
 		RecipeName: "Smoke on the Lauter",
 		StartDate:  time.Now(),
 		UniqueID:   "20171101-flueseason",
@@ -77,7 +77,7 @@ func TestAddBatch(t *testing.T) {
 		t.Errorf("Unable to assign unused hydrometer: %v\n", err)
 	}
 
-	cleanupTestData()
+	CleanupTestData()
 }
 
 func TestAddGravityReading(t *testing.T) {
@@ -118,7 +118,7 @@ func TestAddGravityReading(t *testing.T) {
 		t.Errorf("Reading not sorted by time: id %v in %v\n", newReadingID, flueSeason.GravityReadings)
 	}
 
-	cleanupTestData()
+	CleanupTestData()
 }
 
 func TestHideGravityReading(t *testing.T) {
@@ -142,7 +142,7 @@ func TestHideGravityReading(t *testing.T) {
 		}
 	}
 
-	cleanupTestData()
+	CleanupTestData()
 }
 
 func TestFinishBatch(t *testing.T) {
@@ -171,5 +171,5 @@ func TestFinishBatch(t *testing.T) {
 		t.Errorf("Unable to set hydrometer from finished batch to new batch")
 	}
 
-	cleanupTestData()
+	CleanupTestData()
 }

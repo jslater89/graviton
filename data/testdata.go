@@ -69,11 +69,7 @@ func generateTestData() {
 		StartDate:    time.Now(),
 		HydrometerID: graviton.EmptyID(),
 	}
-	err := flueSeason.Save()
-
-	if err != nil {
-		fmt.Printf("Failed to save Flue Season: %v\n", err)
-	}
+	_ = flueSeason.Save()
 
 	flueSeason.SetHydrometer(greenHydrometer)
 
@@ -114,10 +110,7 @@ func generateTestData() {
 		StartDate:    time.Now(),
 		HydrometerID: graviton.EmptyID(),
 	}
-	err = hopForward.Save()
-	if err != nil {
-		fmt.Printf("Failed to save Hop Forward: %v\n", err)
-	}
+	_ = hopForward.Save()
 }
 
 func getTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {

@@ -15,6 +15,13 @@ type Config struct {
 	GoogleSecret   string `mapstructure:"google_secret"`
 }
 
+func (c Config) GetDBName() string {
+	if c.TestMode {
+		return c.DBName + "-test"
+	}
+	return c.DBName
+}
+
 var config Config
 
 func GetConfig() Config {
@@ -22,15 +29,24 @@ func GetConfig() Config {
 }
 
 func Load(configOverride *string) error {
-	flag.Bool("test_mode", false, "run in test mode (see config.toml comments)")
-	flag.String("server_address", ":10000", "address to run the photo service on")
-	flag.String("mongo_address", "localhost", "address of the database instance to connect to")
-	flag.String("db_name", "graviton", "mongo db name to use")
-	flag.String("google_client_id", "", "google client ID for oauth2")
-	flag.String("google_secret", "", "google secret for oauth2")
 
-	configFile := flag.String("config_file", "config.toml", "the config file to use")
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	var configFile *string
+	if flag.Lookup("test_mode") == nil {
+		flag.Bool("test_mode", false, "run in test mode (see config.toml comments)")
+		flag.String("server_address", ":10000", "address to run the photo service on")
+		flag.String("mongo_address", "localhost", "address of the database instance to connect to")
+		flag.String("db_name", "graviton", "mongo db name to use")
+		flag.String("google_client_id", "", "google client ID for oauth2")
+		flag.String("google_secret", "", "google secret for oauth2")
+
+		configFile = flag.String("config_file", "config.toml", "the config file to use")
+		pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	}
+
+	if configFlag := flag.Lookup("config_file"); configFlag != nil {
+		stringValue := configFlag.Value.String()
+		configFile = &stringValue
+	}
 	pflag.Parse()
 
 	if configOverride != nil {

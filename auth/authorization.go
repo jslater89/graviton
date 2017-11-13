@@ -41,6 +41,11 @@ func checkSessionExpiration(session *Session) bool {
 // for a given endpoint, IsAuthorized extends the session's expiration.
 func IsAuthorized(c echo.Context, path string) bool {
 	bearer := extractBearer(c)
+
+	if bearer == getOrCreateAPIKey(false) {
+		return true
+	}
+
 	sess, err := getSession(bearer)
 
 	if err != nil {
@@ -70,6 +75,51 @@ func IsAuthorized(c echo.Context, path string) bool {
 	saveSession(*sess)
 
 	return true
+}
+
+func GetAPIKey(c echo.Context) error {
+	if !IsAuthorized(c, "/auth/apikey") {
+		return nil
+	}
+
+	return c.JSON(200, bson.M{"key": getOrCreateAPIKey(false)})
+}
+
+func ResetAPIKey(c echo.Context) error {
+	if !IsAuthorized(c, "/auth/apikey") {
+		return nil
+	}
+
+	return c.JSON(200, bson.M{"key": getOrCreateAPIKey(true)})
+}
+
+type apiDoc struct {
+	ID  bson.ObjectId `bson:"_id,omitempty"`
+	Key string        `bson:"key"`
+}
+
+func getOrCreateAPIKey(reset bool) string {
+	n, err := db.apiKeyCollection.Find(bson.M{}).Count()
+
+	if err != nil {
+		panic(err)
+	}
+
+	if n == 0 || reset {
+		db.apiKeyCollection.RemoveAll(bson.M{})
+
+		key := apiDoc{
+			ID:  bson.NewObjectId(),
+			Key: bson.NewObjectId().Hex() + bson.NewObjectId().Hex() + bson.NewObjectId().Hex() + bson.NewObjectId().Hex(),
+		}
+
+		db.apiKeyCollection.Insert(key)
+	}
+
+	key := &apiDoc{}
+	db.apiKeyCollection.Find(bson.M{}).One(key)
+
+	return key.Key
 }
 
 func checkUserPermissions(user *User, write bool, path string) bool {
@@ -116,9 +166,14 @@ func verifyBaseRoles() error {
 		Name: "Viewer",
 		Permissions: []Permission{
 			Permission{
+				Path:     "/",
 				CanRead:  true,
 				CanWrite: false,
-				Path:     "/",
+			},
+			Permission{
+				Path:     "/auth/apikey",
+				CanRead:  false,
+				CanWrite: false,
 			},
 		},
 	}

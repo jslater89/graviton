@@ -52,7 +52,7 @@ func QueryBatches(query bson.M) ([]*Batch, error) {
 	return batches, err
 }
 
-func AddBatch(b Batch) (*Batch, error) {
+func AddBatch(b *Batch) (*Batch, error) {
 	newBatch := &Batch{
 		RecipeName:      b.RecipeName,
 		StartDate:       b.StartDate,

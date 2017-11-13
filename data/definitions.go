@@ -15,7 +15,8 @@ type Batch struct {
 	StartDate       time.Time        `bson:"startDate"`
 	LastUpdate      time.Time        `bson:"lastUpdate"`
 
-	Active bool `bson:"active"`
+	Active   bool `bson:"active"`
+	Archived bool `bson:"archived"`
 }
 
 type GravityReading struct {
@@ -32,4 +33,5 @@ type Hydrometer struct {
 	Name           string        `bson:"name"`
 	Description    string        `bson:"description"`
 	CurrentBatchID bson.ObjectId `bson:"batch"`
+	Archived       bool          `bson:"archived"`
 }

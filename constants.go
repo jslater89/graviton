@@ -1,6 +1,7 @@
 package graviton
 
 import (
+	"github.com/jslater89/graviton/config"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -10,6 +11,8 @@ var Logger *zap.Logger
 var emptyID = bson.ObjectIdHex("2a2a2a2a2a2a2a2a2a2a2a2a")
 
 func Init() error {
+	config.Load(nil)
+
 	var err error
 	Logger, err = zap.NewProduction()
 

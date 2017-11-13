@@ -13,17 +13,23 @@ import (
 )
 
 func main() {
-	config.Load(nil)
-	config := config.GetConfig()
 	graviton.Init()
-	auth.InitOauth()
-	data.InitMongo(config.MongoAddress, config.DBName)
+	config := config.GetConfig()
+
+	auth.InitOauth(config.MongoAddress, config.GetDBName())
+	data.InitMongo(config.MongoAddress, config.GetDBName())
+
+	if config.TestMode {
+		ensureDemoData()
+	}
 
 	e := echo.New()
 
 	e.GET("/api/v1/auth/google/login", auth.GoogleAuthLogin)
 	e.GET("/api/v1/auth/google/callback", auth.GoogleAuthCallback)
 	e.GET("/api/v1/auth/logout", auth.Logout)
+	e.GET("/api/v1/auth/apikey", auth.GetAPIKey)
+	e.POST("/api/v1/auth/apikey/reset", auth.ResetAPIKey)
 	e.GET("/api/v1/users/me", auth.GetSelf)
 
 	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
@@ -35,7 +41,7 @@ func main() {
 
 	// Called by hydrometers; the API finds the correct
 	// batch by getting the correct hydrometer.
-	e.POST("/api/v1/batches/reading", api.AddReading)
+	e.POST("/api/v1/reading", api.AddReading)
 
 	e.GET("/api/v1/hydrometers", api.QueryHydrometers)
 	e.POST("/api/v1/hydrometers", api.NewHydrometer)
