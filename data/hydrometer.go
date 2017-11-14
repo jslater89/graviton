@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/jslater89/graviton"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -42,7 +43,7 @@ func SingleHydrometer(query bson.M) (*Hydrometer, error) {
 	}
 
 	if len(hydrometers) < 1 {
-		return nil, errors.New("not found")
+		return nil, mgo.ErrNotFound
 	}
 
 	return hydrometers[0], nil

@@ -3,6 +3,7 @@ package auth
 import (
 	"time"
 
+	"github.com/jslater89/graviton/config"
 	"github.com/markbates/goth"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -91,8 +92,14 @@ func getOrCreateUser(email string) (*User, error) {
 	if err != nil && err != mgo.ErrNotFound {
 		return nil, err
 	} else if err == mgo.ErrNotFound {
+		roleName := "Viewer"
+
+		if config.GetConfig().TestMode {
+			roleName = "Editor"
+		}
+
 		role := &Role{}
-		err = db.roleCollection.Find(bson.M{"name": "Viewer"}).One(role)
+		err = db.roleCollection.Find(bson.M{"name": roleName}).One(role)
 
 		if err != nil {
 			return nil, err

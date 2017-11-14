@@ -3,6 +3,8 @@ package api
 import (
 	"time"
 
+	"gopkg.in/mgo.v2"
+
 	"github.com/jslater89/graviton"
 	"github.com/jslater89/graviton/data"
 	"go.uber.org/zap"
@@ -89,7 +91,10 @@ func convertDatabaseBatch(b *data.Batch, lightweight bool) (*Batch, error) {
 
 	hydrometer, err := data.SingleHydrometer(bson.M{"_id": b.HydrometerID})
 
-	if hydrometer != nil {
+	if err != nil && err == mgo.ErrNotFound {
+		converted.Hydrometer = Hydrometer{}
+		err = nil
+	} else if hydrometer != nil {
 		convertedHydrometer, _ := convertDatabaseHydrometer(hydrometer)
 		converted.Hydrometer = *convertedHydrometer
 	}
@@ -104,6 +109,8 @@ func convertBatchParam(b *BatchParam) (*data.Batch, error) {
 		RecipeName:   b.RecipeName,
 		StartDate:    b.StartDate,
 		UniqueID:     b.UniqueID,
+		Active:       b.Active,
+		Archived:     false,
 	}
 	return batch, nil
 }
@@ -113,7 +120,7 @@ func mergeBatchParam(param *BatchParam, batch *data.Batch) error {
 	batch.StartDate = param.StartDate
 	batch.UniqueID = param.UniqueID
 
-	if param.Hydrometer.ID != graviton.EmptyID() {
+	if param.Hydrometer.ID != "" && param.Hydrometer.ID != graviton.EmptyID() {
 		hydrometer, err := data.SingleHydrometer(bson.M{"_id": param.Hydrometer.ID})
 
 		if err != nil {

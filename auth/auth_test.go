@@ -41,7 +41,6 @@ func TestExtractBearer(t *testing.T) {
 }
 
 func TestHandleUser(t *testing.T) {
-	graviton.InitTest()
 	generateTestData()
 
 	e := echo.New()
@@ -88,8 +87,7 @@ func TestHandleUser(t *testing.T) {
 }
 
 func TestAuthorizeAPIKey(t *testing.T) {
-	graviton.InitTest()
-	InitOauth(config.GetConfig().MongoAddress, config.GetConfig().GetDBName())
+	generateTestData()
 
 	e := echo.New()
 	req := httptest.NewRequest(echo.POST, "/", strings.NewReader("{}"))
@@ -111,5 +109,5 @@ func generateTestData() {
 }
 
 func cleanupTestData() {
-	data.CleanupTestData()
+	db.mongoDB.DropDatabase()
 }

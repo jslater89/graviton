@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"gopkg.in/mgo.v2"
+
 	"github.com/jslater89/graviton"
 	"go.uber.org/zap"
 
@@ -40,7 +42,7 @@ func SingleBatch(query bson.M) (*Batch, error) {
 	}
 
 	if len(batches) < 1 {
-		return nil, errors.New("not found")
+		return nil, mgo.ErrNotFound
 	}
 
 	return batches[0], nil
@@ -57,12 +59,25 @@ func AddBatch(b *Batch) (*Batch, error) {
 		RecipeName:      b.RecipeName,
 		StartDate:       b.StartDate,
 		UniqueID:        b.UniqueID,
-		Active:          true,
-		HydrometerID:    graviton.EmptyID(),
+		Active:          b.Active,
+		Archived:        b.Archived,
+		HydrometerID:    b.HydrometerID,
 		GravityReadings: []GravityReading{},
 	}
 
 	return newBatch, newBatch.Save()
+}
+
+func (b *Batch) SetHydrometerID(hID bson.ObjectId) error {
+	hydrometer, err := SingleHydrometer(bson.M{"_id": b.HydrometerID})
+
+	if err != nil && err != mgo.ErrNotFound {
+		return err
+	} else if err != nil && err == mgo.ErrNotFound {
+		return b.SetHydrometer(&Hydrometer{ID: graviton.EmptyID()})
+	}
+
+	return b.SetHydrometer(hydrometer)
 }
 
 func (b *Batch) SetHydrometer(h *Hydrometer) error {
@@ -74,7 +89,7 @@ func (b *Batch) SetHydrometer(h *Hydrometer) error {
 		return err
 	}
 
-	if h.ID != graviton.EmptyID() {
+	if h.ID != "" && h.ID != graviton.EmptyID() {
 		err = h.Save()
 		if err != nil {
 			return err

@@ -17,8 +17,13 @@ func QueryBatches(c echo.Context) error {
 	}
 
 	query := bson.M{
-		"active":   true,
 		"archived": false,
+	}
+
+	err := parseBatchQuery(c, query)
+
+	if err != nil {
+		return c.JSON(400, bson.M{"error": err.Error()})
 	}
 
 	batches, err := data.QueryBatches(query)
@@ -90,7 +95,14 @@ func NewBatch(c echo.Context) error {
 		return c.JSON(502, bson.M{"error": err.Error()})
 	}
 
-	return c.JSON(200, savedBatch)
+	apiBatch, err := convertDatabaseBatch(savedBatch, false)
+
+	if err != nil {
+		graviton.Logger.Warn("Batch conversion failed", zap.Error(err))
+		return c.JSON(502, bson.M{"error": err.Error()})
+	}
+
+	return c.JSON(200, apiBatch)
 }
 
 func EditBatch(c echo.Context) error {
@@ -103,6 +115,8 @@ func EditBatch(c echo.Context) error {
 	if !bson.IsObjectIdHex(id) {
 		return c.JSON(400, bson.M{"error": "bad object id"})
 	}
+
+	bsonID := bson.ObjectIdHex(id)
 
 	batchParam := &BatchParam{}
 	err := c.Bind(batchParam)
@@ -117,9 +131,10 @@ func EditBatch(c echo.Context) error {
 		return c.JSON(400, bson.M{"error": "invalid batch object"})
 	}
 
-	batch, err = data.SingleBatch(bson.M{"_id": id})
+	batch, err = data.SingleBatch(bson.M{"_id": bsonID})
 
 	if err != nil {
+		graviton.Logger.Warn("Batch not found", zap.String("ID", bsonID.Hex()))
 		return c.JSON(400, bson.M{"error": err.Error()})
 	}
 
@@ -127,12 +142,14 @@ func EditBatch(c echo.Context) error {
 	err = mergeBatchParam(batchParam, batch)
 
 	if err != nil {
+		graviton.Logger.Warn("Batch merge failed", zap.Error(err))
 		return c.JSON(400, bson.M{"error": err.Error()})
 	}
 
 	apiBatch, err := convertDatabaseBatch(batch, false)
 
 	if err != nil {
+		graviton.Logger.Warn("Batch conversion failed", zap.Error(err))
 		return c.JSON(502, bson.M{"error": err.Error()})
 	}
 
@@ -226,4 +243,49 @@ func FinishBatch(c echo.Context) error {
 	}
 
 	return c.JSON(200, batch)
+}
+
+func parseBatchQuery(c echo.Context, query bson.M) error {
+	if bson.IsObjectIdHex(c.QueryParam("id")) {
+		query["_id"] = c.QueryParam("id")
+	}
+
+	if c.QueryParam("recipe") != "" {
+		query["recipe"] = c.QueryParam("recipe")
+	}
+
+	if c.QueryParam("stringId") != "" {
+		query["stringId"] = c.QueryParam("stringId")
+	}
+
+	if c.QueryParam("hydrometerId") != "" {
+		query["hydrometer"] = c.QueryParam("hydrometerId")
+	}
+
+	// TODO: implement later
+	// if time, err := time.Parse(time.RFC3339, c.QueryParam("after"); err != nil {
+	// query["startdate"] = bson.M{"$gt": ...}
+	// }
+	// TODO: implement later
+	// if time, err := time.Parse(time.RFC3339, c.QueryParam("before"); err != nil {
+	//
+	// }
+
+	if c.QueryParam("archived") != "" {
+		if c.QueryParam("archived") == "true" {
+			query["archived"] = true
+		} else {
+			query["archived"] = false
+		}
+	}
+
+	if c.QueryParam("active") != "" {
+		if c.QueryParam("active") == "true" {
+			query["active"] = true
+		} else {
+			query["active"] = false
+		}
+	}
+
+	return nil
 }
