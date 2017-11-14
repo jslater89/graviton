@@ -7,10 +7,9 @@ import (
 	"math/rand"
 
 	"github.com/jslater89/graviton"
+	"github.com/jslater89/graviton/config"
 	"gopkg.in/mgo.v2/bson"
 )
-
-const testDB = "graviton-test"
 
 // GenerateDemoData populates the database with some
 // example information.
@@ -42,8 +41,7 @@ func GenerateDemoReadings(b *Batch) {
 }
 
 func generateTestData() {
-	graviton.Init()
-	InitMongo("localhost", testDB)
+	InitMongo("localhost", config.GetConfig().GetDBName())
 
 	blueHydrometer := &Hydrometer{
 		ID:          bson.NewObjectId(),

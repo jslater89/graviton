@@ -113,13 +113,19 @@ func mergeBatchParam(param *BatchParam, batch *data.Batch) error {
 	batch.StartDate = param.StartDate
 	batch.UniqueID = param.UniqueID
 
-	hydrometer, err := data.SingleHydrometer(bson.M{"_id": param.Hydrometer.ID})
+	if param.Hydrometer.ID != graviton.EmptyID() {
+		hydrometer, err := data.SingleHydrometer(bson.M{"_id": param.Hydrometer.ID})
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		return batch.SetHydrometer(hydrometer)
 	}
 
-	return batch.SetHydrometer(hydrometer)
+	return batch.SetHydrometer(&data.Hydrometer{
+		ID: graviton.EmptyID(),
+	})
 }
 
 type HydrometerReading struct {

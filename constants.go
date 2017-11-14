@@ -23,6 +23,20 @@ func Init() error {
 	return nil
 }
 
+func InitTest() error {
+	config.Load(nil)
+	config.OverrideTest(true)
+
+	var err error
+	Logger, err = zap.NewDevelopment()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func EmptyID() bson.ObjectId {
 	return emptyID
 }

@@ -1,3 +1,5 @@
+test_mode=false
+demo_data=false
 server_address=":10000"
 mongo_address="localhost"
 db_name="graviton"

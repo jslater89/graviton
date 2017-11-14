@@ -12,6 +12,7 @@ import (
 // Batch tests happen to cover all the current hydrometer features, too.
 
 func TestSetHydrometer(t *testing.T) {
+	graviton.InitTest()
 	generateTestData()
 
 	blueHydrometer, _, flueSeason, hopForward := getTestObjects()
@@ -42,6 +43,7 @@ func TestSetHydrometer(t *testing.T) {
 }
 
 func TestAddBatch(t *testing.T) {
+	graviton.InitTest()
 	generateTestData()
 
 	batch := &Batch{
@@ -81,6 +83,7 @@ func TestAddBatch(t *testing.T) {
 }
 
 func TestAddGravityReading(t *testing.T) {
+	graviton.InitTest()
 	generateTestData()
 
 	_, _, flueSeason, _ := getTestObjects()
@@ -122,6 +125,7 @@ func TestAddGravityReading(t *testing.T) {
 }
 
 func TestHideGravityReading(t *testing.T) {
+	graviton.InitTest()
 	generateTestData()
 
 	_, _, flueSeason, _ := getTestObjects()
@@ -146,6 +150,7 @@ func TestHideGravityReading(t *testing.T) {
 }
 
 func TestFinishBatch(t *testing.T) {
+	graviton.InitTest()
 	generateTestData()
 
 	_, greenHydrometer, flueSeason, hopForward := getTestObjects()

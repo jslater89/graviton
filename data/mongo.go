@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/jslater89/graviton/config"
 	"gopkg.in/mgo.v2"
 )
 
@@ -21,7 +22,7 @@ func InitMongo(dbAddr string, database string) error {
 		return err
 	}
 
-	db.dbRef = db.session.DB("graviton")
+	db.dbRef = db.session.DB(config.GetConfig().GetDBName())
 	db.batchCollection = db.dbRef.C("batches")
 	db.hydrometerCollection = db.dbRef.C("hydrometers")
 

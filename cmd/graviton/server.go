@@ -19,7 +19,7 @@ func main() {
 	auth.InitOauth(config.MongoAddress, config.GetDBName())
 	data.InitMongo(config.MongoAddress, config.GetDBName())
 
-	if config.TestMode {
+	if config.DemoData {
 		ensureDemoData()
 	}
 

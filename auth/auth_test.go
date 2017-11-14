@@ -41,7 +41,7 @@ func TestExtractBearer(t *testing.T) {
 }
 
 func TestHandleUser(t *testing.T) {
-	graviton.Init()
+	graviton.InitTest()
 	generateTestData()
 
 	e := echo.New()
@@ -88,7 +88,7 @@ func TestHandleUser(t *testing.T) {
 }
 
 func TestAuthorizeAPIKey(t *testing.T) {
-	graviton.Init()
+	graviton.InitTest()
 	InitOauth(config.GetConfig().MongoAddress, config.GetConfig().GetDBName())
 
 	e := echo.New()
@@ -100,9 +100,12 @@ func TestAuthorizeAPIKey(t *testing.T) {
 	if !IsAuthorized(c, "/arbitrary/path") {
 		t.Errorf("API key auth not successful")
 	}
+
+	db.mongoDB.DropDatabase()
 }
 
 func generateTestData() {
+	graviton.InitTest()
 	data.GenerateDemoData()
 	InitOauth(config.GetConfig().MongoAddress, config.GetConfig().GetDBName())
 }
