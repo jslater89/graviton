@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"crypto/rand"
 	"net/http"
 	"time"
 
@@ -72,7 +73,7 @@ func HandleUser(c echo.Context, user goth.User) bson.ObjectId {
 
 	if !bson.IsObjectIdHex(sessionString) {
 		graviton.Logger.Info("Bad auth header")
-		sessionID = bson.NewObjectId()
+		sessionID = bson.ObjectId(generateSessionToken())
 	} else {
 		sessionID = bson.ObjectIdHex(sessionString)
 		sess, err = getSession(sessionID.Hex())
@@ -105,4 +106,10 @@ func HandleUser(c echo.Context, user goth.User) bson.ObjectId {
 		graviton.Logger.Warn("Error storing session", zap.Any("User", user), zap.Error(err))
 	}
 	return sessionID
+}
+
+func generateSessionToken() string {
+	secureBytes := make([]byte, 12)
+	rand.Read(secureBytes)
+	return string(secureBytes)
 }

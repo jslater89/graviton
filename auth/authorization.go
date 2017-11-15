@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/hex"
 	"net/http"
 	"strings"
 	"time"
@@ -108,9 +109,12 @@ func getOrCreateAPIKey(reset bool) string {
 	if n == 0 || reset {
 		db.apiKeyCollection.RemoveAll(bson.M{})
 
+		keyBytes := []byte(generateSessionToken() + generateSessionToken() + generateSessionToken())
+		keyString := hex.EncodeToString(keyBytes)
+
 		key := apiDoc{
 			ID:  bson.NewObjectId(),
-			Key: bson.NewObjectId().Hex() + bson.NewObjectId().Hex() + bson.NewObjectId().Hex() + bson.NewObjectId().Hex(),
+			Key: keyString,
 		}
 
 		db.apiKeyCollection.Insert(key)

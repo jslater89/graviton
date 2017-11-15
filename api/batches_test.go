@@ -269,7 +269,7 @@ func generateTestSession() bson.ObjectId {
 	// G
 	e := echo.New()
 	req := httptest.NewRequest(echo.POST, "/", strings.NewReader("{}"))
-	req.Header.Set("Authorization", "Bearer abcdefabcdefabcdefabcdef")
+	//req.Header.Set("Authorization", "Bearer abcdefabcdefabcdefabcdef")
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	user := goth.User{

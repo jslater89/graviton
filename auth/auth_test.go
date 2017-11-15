@@ -71,8 +71,8 @@ func TestHandleUser(t *testing.T) {
 
 	t.Logf("Session: %v", sess)
 
-	if IsAuthorized(c, "/") {
-		t.Errorf("User with read-only permissions can write")
+	if !IsAuthorized(c, "/") {
+		t.Errorf("User can't write")
 	}
 
 	req = httptest.NewRequest(echo.GET, "/", nil)
@@ -80,7 +80,7 @@ func TestHandleUser(t *testing.T) {
 	c = e.NewContext(req, rec)
 
 	if !IsAuthorized(c, "/") {
-		t.Errorf("User with read-only permissions can't read")
+		t.Errorf("User can't read")
 	}
 
 	cleanupTestData()
