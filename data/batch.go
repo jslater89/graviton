@@ -61,15 +61,30 @@ func AddBatch(b *Batch) (*Batch, error) {
 		UniqueID:        b.UniqueID,
 		Active:          b.Active,
 		Archived:        b.Archived,
-		HydrometerID:    b.HydrometerID,
 		GravityReadings: []GravityReading{},
 	}
 
-	return newBatch, newBatch.Save()
+	err := newBatch.Save()
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = newBatch.SetHydrometerID(b.HydrometerID)
+
+	if err != nil && err != mgo.ErrNotFound {
+		return nil, err
+	}
+
+	return newBatch, nil
 }
 
 func (b *Batch) SetHydrometerID(hID bson.ObjectId) error {
-	hydrometer, err := SingleHydrometer(bson.M{"_id": b.HydrometerID})
+	if hID == "" {
+		hID = graviton.EmptyID()
+	}
+
+	hydrometer, err := SingleHydrometer(bson.M{"_id": hID})
 
 	if err != nil && err != mgo.ErrNotFound {
 		return err
@@ -156,6 +171,18 @@ func (b *Batch) FinishBatch() error {
 	}
 
 	return h.Save()
+}
+
+func (b *Batch) ArchiveBatch() error {
+	if b.Active {
+		err := b.FinishBatch()
+		if err != nil {
+			return err
+		}
+	}
+
+	b.Archived = true
+	return b.Save()
 }
 
 func (b *Batch) CalculateGravityDelta() float64 {

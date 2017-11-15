@@ -91,7 +91,7 @@ func NewBatch(c echo.Context) error {
 	savedBatch, err := data.AddBatch(batch)
 
 	if err != nil {
-		graviton.Logger.Error("Failed to add batch", zap.Any("Batch", batch))
+		graviton.Logger.Error("Failed to add batch", zap.Any("Batch", batch), zap.Error(err))
 		return c.JSON(502, bson.M{"error": err.Error()})
 	}
 
@@ -213,23 +213,21 @@ func FinishBatch(c echo.Context) error {
 		return nil
 	}
 
-	batchParam := &BatchParam{}
-	err := c.Bind(batchParam)
+	id := c.Param("id")
 
-	if err != nil {
-		graviton.Logger.Warn("Invalid input", zap.Error(err))
+	if !bson.IsObjectIdHex(id) {
+		graviton.Logger.Warn("Invalid input", zap.String("ID", id))
 		return c.JSON(400, bson.M{"error": "invalid input"})
 	}
 
 	batch, err := data.SingleBatch(bson.M{
-		"_id":      batchParam.ID,
-		"active":   true,
-		"archived": false,
+		"_id":    bson.ObjectIdHex(id),
+		"active": true,
 	})
 
 	if err != nil {
 		graviton.Logger.Warn("Error getting batch",
-			zap.String("BatchID", batchParam.ID.Hex()),
+			zap.String("BatchID", id),
 			zap.Error(err))
 		return c.JSON(400, bson.M{"error": "reading received for missing or completed batch"})
 	}
@@ -238,6 +236,41 @@ func FinishBatch(c echo.Context) error {
 
 	if err != nil {
 		graviton.Logger.Warn("Error finishing batch",
+			zap.Error(err))
+		return c.JSON(502, bson.M{"error": "unable to finish batch"})
+	}
+
+	return c.JSON(200, batch)
+}
+
+func ArchiveBatch(c echo.Context) error {
+	if !auth.IsAuthorized(c, "/batches") {
+		return nil
+	}
+
+	id := c.Param("id")
+
+	if !bson.IsObjectIdHex(id) {
+		graviton.Logger.Warn("Invalid input", zap.String("ID", id))
+		return c.JSON(400, bson.M{"error": "invalid input"})
+	}
+
+	batch, err := data.SingleBatch(bson.M{
+		"_id":      bson.ObjectIdHex(id),
+		"archived": false,
+	})
+
+	if err != nil {
+		graviton.Logger.Warn("Error getting batch",
+			zap.String("BatchID", id),
+			zap.Error(err))
+		return c.JSON(400, bson.M{"error": "reading received for missing or completed batch"})
+	}
+
+	err = batch.ArchiveBatch()
+
+	if err != nil {
+		graviton.Logger.Warn("Error archiving batch",
 			zap.Error(err))
 		return c.JSON(502, bson.M{"error": "unable to finish batch"})
 	}

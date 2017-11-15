@@ -38,6 +38,7 @@ func main() {
 	e.GET("/api/v1/batches/:id", api.GetBatch)          // returns full batch, including all readings
 	e.PUT("/api/v1/batches/:id", api.EditBatch)         // takes a BatchParam, use to start batches
 	e.POST("/api/v1/batch/:id/finish", api.FinishBatch) // sets a batch inactive, releasing its hydrometer and stopping readings
+	e.POST("/api/v1/batch/:id/archive", api.ArchiveBatch)
 
 	// Called by hydrometers; the API finds the correct
 	// batch by getting the correct hydrometer.

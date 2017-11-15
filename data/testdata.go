@@ -8,6 +8,7 @@ import (
 
 	"github.com/jslater89/graviton"
 	"github.com/jslater89/graviton/config"
+	"go.uber.org/zap"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -67,9 +68,17 @@ func generateTestData() {
 		StartDate:    time.Now(),
 		HydrometerID: graviton.EmptyID(),
 	}
-	_ = flueSeason.Save()
+	err := flueSeason.Save()
 
-	flueSeason.SetHydrometer(greenHydrometer)
+	if err != nil {
+		graviton.Logger.Error("Error saving demo data", zap.Error(err))
+	}
+
+	err = flueSeason.SetHydrometer(greenHydrometer)
+
+	if err != nil {
+		graviton.Logger.Error("Error saving demo data", zap.Error(err))
+	}
 
 	flueSeason.AddReading(GravityReading{
 		Date:           time.Now(),
@@ -108,7 +117,11 @@ func generateTestData() {
 		StartDate:    time.Now(),
 		HydrometerID: graviton.EmptyID(),
 	}
-	_ = hopForward.Save()
+	err = hopForward.Save()
+
+	if err != nil {
+		graviton.Logger.Error("Error saving demo data", zap.Error(err))
+	}
 }
 
 func getTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {

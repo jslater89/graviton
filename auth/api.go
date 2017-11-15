@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -31,7 +30,7 @@ func GoogleAuthLogin(c echo.Context) error {
 func GoogleAuthCallback(c echo.Context) error {
 	user, err := gothic.CompleteUserAuth(c.Response(), c.Request())
 	if err != nil {
-		fmt.Println(err)
+		graviton.Logger.Error("OAuth callback returned error", zap.Error(err))
 		return c.JSON(502, bson.M{"error": err.Error()})
 	}
 

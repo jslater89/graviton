@@ -149,6 +149,8 @@ func TestBatchAPI(t *testing.T) {
 		t.Errorf("New batch hydrometer setting didn't work")
 	}
 
+	tisTheSaison := *receivedBatch
+
 	// ---------------- 5. Test POST new batch with no hydrometer set
 	batchParam = BatchParam{
 		Active:     false,
@@ -185,8 +187,80 @@ func TestBatchAPI(t *testing.T) {
 	}
 
 	// ---------------- 6. Test add reading
+	readingParam := HydrometerReading{
+		Battery:        3.6,
+		Gravity:        1.074,
+		Temperature:    68.8,
+		HydrometerName: "Green Hydrometer",
+	}
+
+	body, _ = json.Marshal(readingParam)
+
+	e = echo.New()
+	req = httptest.NewRequest(echo.POST, "/api/v1/reading", bytes.NewBuffer(body))
+	req.Header.Set("Authorization", "Bearer "+sessionID.Hex())
+	req.Header.Set("Content-Type", "application/json")
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+
+	err = AddReading(c)
+
+	if err != nil || rec.Code != 200 {
+		bodyBytes := rec.Body.Bytes()
+		t.Errorf("Request failed with code %d %v %s\n", rec.Code, err, string(bodyBytes))
+	}
+
+	dataBatch, _ := data.SingleBatch(bson.M{"_id": tisTheSaison.ID})
+
+	if len(dataBatch.GravityReadings) != 1 {
+		t.Errorf("Incorrect number of readings")
+	}
 
 	// ---------------- 7. Test finish batch
+	e = echo.New()
+	req = httptest.NewRequest(echo.POST, "/api/v1/batches/:id/finish", bytes.NewBuffer(body))
+	req.Header.Set("Authorization", "Bearer "+sessionID.Hex())
+	req.Header.Set("Content-Type", "application/json")
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues(tisTheSaison.ID.Hex())
+
+	err = FinishBatch(c)
+
+	if err != nil || rec.Code != 200 {
+		bodyBytes := rec.Body.Bytes()
+		t.Errorf("Request failed with code %d %v %s\n", rec.Code, err, string(bodyBytes))
+	}
+
+	dataBatch, _ = data.SingleBatch(bson.M{"_id": tisTheSaison.ID})
+
+	if dataBatch.Active {
+		t.Errorf("Batch still active")
+	}
+
+	// ---------------- 8. Test finish batch
+	e = echo.New()
+	req = httptest.NewRequest(echo.POST, "/api/v1/batches/:id/archive", bytes.NewBuffer(body))
+	req.Header.Set("Authorization", "Bearer "+sessionID.Hex())
+	req.Header.Set("Content-Type", "application/json")
+	rec = httptest.NewRecorder()
+	c = e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues(tisTheSaison.ID.Hex())
+
+	err = ArchiveBatch(c)
+
+	if err != nil || rec.Code != 200 {
+		bodyBytes := rec.Body.Bytes()
+		t.Errorf("Request failed with code %d %v %s\n", rec.Code, err, string(bodyBytes))
+	}
+
+	dataBatch, _ = data.SingleBatch(bson.M{"_id": tisTheSaison.ID})
+
+	if !dataBatch.Archived {
+		t.Errorf("Batch not archived")
+	}
 
 	data.CleanupTestData()
 }
