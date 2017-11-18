@@ -46,8 +46,9 @@ func GoogleAuthCallback(c echo.Context) error {
 func GetSelf(c echo.Context) error {
 	token := extractBearer(c)
 
-	if token == "" || !bson.IsObjectIdHex("token") {
-		return c.JSON(400, bson.M{"error": "invalid session"})
+	if token == "" || !bson.IsObjectIdHex(token) {
+		graviton.Logger.Warn("Invalid auth token", zap.String("Token", token), zap.Bool("IsObjectId", bson.IsObjectIdHex(token)))
+		return c.JSON(400, bson.M{"error": "invalid token"})
 	}
 
 	session, err := getSession(token)
