@@ -96,6 +96,22 @@ func (b *Batch) SetHydrometerID(hID bson.ObjectId) error {
 }
 
 func (b *Batch) SetHydrometer(h *Hydrometer) error {
+	// TODO: test case for this block: setting a hydrometer on a batch
+	// should unset the batch's original hydrometer's batch
+	if b.HydrometerID != "" && b.HydrometerID != graviton.EmptyID() {
+		hydrometer, err := SingleHydrometer(bson.M{"_id": b.HydrometerID})
+
+		if err != nil {
+			return err
+		}
+
+		hydrometer.CurrentBatchID = graviton.EmptyID()
+		err = hydrometer.Save()
+		if err != nil {
+			return err
+		}
+	}
+
 	b.HydrometerID = h.ID
 	h.CurrentBatchID = b.ID
 

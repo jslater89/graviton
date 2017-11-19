@@ -46,6 +46,7 @@ func main() {
 
 	e.GET("/api/v1/hydrometers", api.QueryHydrometers)
 	e.POST("/api/v1/hydrometers", api.NewHydrometer)
+	e.GET("/api/v1/hydrometers/available", api.QueryAvailableHydrometers)
 
 	e.GET("/api/v1/hydrometers/:id", api.GetHydrometer)
 	e.PUT("/api/v1/hydrometers/:id", api.EditHydrometer)
