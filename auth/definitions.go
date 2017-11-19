@@ -44,7 +44,7 @@ type Session struct {
 
 func initLocalSessionStore(maxAge int) {
 	db.sessionCollection.EnsureIndex(mgo.Index{
-		Key:         []string{"created"},
+		Key:         []string{"expiry"},
 		ExpireAfter: time.Second * time.Duration(maxAge),
 	})
 	db.sessionCollection.EnsureIndex(mgo.Index{

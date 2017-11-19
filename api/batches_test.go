@@ -266,7 +266,7 @@ func TestBatchAPI(t *testing.T) {
 }
 
 func generateTestSession() bson.ObjectId {
-	// G
+	// Generate a fake session for testing
 	e := echo.New()
 	req := httptest.NewRequest(echo.POST, "/", strings.NewReader("{}"))
 	//req.Header.Set("Authorization", "Bearer abcdefabcdefabcdefabcdef")

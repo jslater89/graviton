@@ -61,6 +61,7 @@ func convertDatabaseBatch(b *data.Batch, lightweight bool) (*Batch, error) {
 		StartDate:  b.StartDate,
 		LastUpdate: b.LastUpdate,
 		Active:     b.Active,
+		Archived:   b.Archived,
 	}
 
 	if len(b.GravityReadings) > 0 {
@@ -119,6 +120,8 @@ func mergeBatchParam(param *BatchParam, batch *data.Batch) error {
 	batch.RecipeName = param.RecipeName
 	batch.StartDate = param.StartDate
 	batch.UniqueID = param.UniqueID
+	batch.Active = param.Active
+	batch.Archived = param.Archived
 
 	if param.Hydrometer.ID != "" && param.Hydrometer.ID != graviton.EmptyID() {
 		hydrometer, err := data.SingleHydrometer(bson.M{"_id": param.Hydrometer.ID})
