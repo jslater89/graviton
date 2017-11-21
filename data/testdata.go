@@ -131,11 +131,18 @@ func getTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {
 	flueSeason := &Batch{}
 	hopForward := &Batch{}
 
-	db.hydrometerCollection.Find(bson.M{"name": "Blue Hydrometer"}).One(blueHydrometer)
-	db.hydrometerCollection.Find(bson.M{"name": "Green Hydrometer"}).One(greenHydrometer)
+	hydrometers := []*Hydrometer{}
+	batches := []*Batch{}
 
-	db.batchCollection.Find(bson.M{"stringId": "20171101-flueseason"}).One(flueSeason)
-	db.batchCollection.Find(bson.M{"stringId": "20171101-hopforward"}).One(hopForward)
+	hydrometers, _ = QueryHydrometers(bson.M{"name": "Blue Hydrometer"})
+	blueHydrometer = hydrometers[0]
+
+	greenHydrometer, _ = SingleHydrometer(bson.M{"name": "Green Hydrometer"})
+
+	batches, _ = QueryBatches(bson.M{"stringId": "20171101-flueseason"})
+	flueSeason = batches[0]
+
+	hopForward, _ = SingleBatch(bson.M{"stringId": "20171101-hopforward"})
 
 	fmt.Println(blueHydrometer)
 	fmt.Println(greenHydrometer)

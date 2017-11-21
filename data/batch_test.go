@@ -32,11 +32,23 @@ func TestSetHydrometer(t *testing.T) {
 		t.Errorf("Hydrometer batch ID wrong")
 	}
 
+	blueHydrometer, greenHydrometer, flueSeason, hopForward := getTestObjects()
+
+	if greenHydrometer.CurrentBatchID != graviton.EmptyID() {
+		t.Errorf("Replaced hydrometer batch ID not reset")
+	}
+
 	// try to set Hop Forward to Green Hydrometer
 	err = hopForward.SetHydrometer(blueHydrometer)
 
 	if err == nil {
 		t.Errorf("Stole another batch's hydrometer")
+	}
+
+	err = hopForward.SetHydrometerID(greenHydrometer.ID)
+
+	if err != nil {
+		t.Errorf("Unable to set hydrometer by ID")
 	}
 
 	CleanupTestData()
