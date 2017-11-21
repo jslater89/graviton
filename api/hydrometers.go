@@ -8,6 +8,12 @@ import (
 )
 
 func QueryHydrometers(c echo.Context) error {
+	query := bson.M{
+		"archived": false,
+	}
+
+	parseHydrometerQuery(c, query)
+
 	hydrometers, err := data.QueryHydrometers(bson.M{})
 
 	if err != nil {
@@ -24,7 +30,7 @@ func QueryHydrometers(c echo.Context) error {
 }
 
 func QueryAvailableHydrometers(c echo.Context) error {
-	hydrometers, err := data.QueryHydrometers(bson.M{"batch": graviton.EmptyID()})
+	hydrometers, err := data.QueryHydrometers(bson.M{"batch": graviton.EmptyID(), "archived": false})
 
 	if err != nil {
 		c.String(502, "database query failed")
@@ -51,6 +57,10 @@ func EditHydrometer(c echo.Context) error {
 	return nil
 }
 
-func DeleteHydrometer(c echo.Context) error {
+func ArchiveHydrometer(c echo.Context) error {
 	return nil
+}
+
+func parseHydrometerQuery(c echo.Context, query bson.M) {
+	return
 }

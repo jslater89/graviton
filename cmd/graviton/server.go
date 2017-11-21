@@ -35,10 +35,10 @@ func main() {
 	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
 	e.POST("/api/v1/batches", api.NewBatch)    // takes a BatchParam
 
-	e.GET("/api/v1/batches/:id", api.GetBatch)          // returns full batch, including all readings
-	e.PUT("/api/v1/batches/:id", api.EditBatch)         // takes a BatchParam, use to start batches
-	e.POST("/api/v1/batch/:id/finish", api.FinishBatch) // sets a batch inactive, releasing its hydrometer and stopping readings
-	e.POST("/api/v1/batch/:id/archive", api.ArchiveBatch)
+	e.GET("/api/v1/batches/:id", api.GetBatch)            // returns full batch, including all readings
+	e.PUT("/api/v1/batches/:id", api.EditBatch)           // takes a BatchParam, use to start batches
+	e.POST("/api/v1/batch/:id/finish", api.FinishBatch)   // sets a batch inactive, releasing its hydrometer and stopping readings
+	e.POST("/api/v1/batch/:id/archive", api.ArchiveBatch) // sets a batch archived, removing it from default search results
 
 	// Called by hydrometers; the API finds the correct
 	// batch by getting the correct hydrometer.
@@ -46,11 +46,11 @@ func main() {
 
 	e.GET("/api/v1/hydrometers", api.QueryHydrometers)
 	e.POST("/api/v1/hydrometers", api.NewHydrometer)
-	e.GET("/api/v1/hydrometers/available", api.QueryAvailableHydrometers)
+	e.GET("/api/v1/hydrometers/available", api.QueryAvailableHydrometers) // gets all hydrometers not currently batch-assigned
 
 	e.GET("/api/v1/hydrometers/:id", api.GetHydrometer)
 	e.PUT("/api/v1/hydrometers/:id", api.EditHydrometer)
-	e.DELETE("/api/v1/hydrometers/:id", api.DeleteHydrometer) // sets a 'deleted' flag
+	e.DELETE("/api/v1/hydrometers/:id", api.ArchiveHydrometer) // sets a hydrometer archived
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		Skipper:      middleware.DefaultCORSConfig.Skipper,
