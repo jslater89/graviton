@@ -7,6 +7,7 @@ import (
 
 	"github.com/jslater89/graviton"
 	"github.com/jslater89/graviton/data"
+	"github.com/labstack/echo"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -189,4 +190,8 @@ func convertHydrometerParam(h *HydrometerParam) (*data.Hydrometer, error) {
 		Description: h.Description,
 	}
 	return hydrometer, nil
+}
+
+func defaultErrorResponse(c echo.Context, code int, err error) error {
+	return c.JSON(code, bson.M{"error": err.Error()})
 }
