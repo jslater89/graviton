@@ -15,7 +15,7 @@ func TestSetHydrometer(t *testing.T) {
 	graviton.InitTest()
 	generateTestData()
 
-	blueHydrometer, _, flueSeason, hopForward := getTestObjects()
+	blueHydrometer, _, flueSeason, hopForward := GetTestObjects()
 
 	// set Flue Season to Green Hydrometer
 	err := flueSeason.SetHydrometer(blueHydrometer)
@@ -32,7 +32,7 @@ func TestSetHydrometer(t *testing.T) {
 		t.Errorf("Hydrometer batch ID wrong")
 	}
 
-	blueHydrometer, greenHydrometer, flueSeason, hopForward := getTestObjects()
+	blueHydrometer, greenHydrometer, flueSeason, hopForward := GetTestObjects()
 
 	if greenHydrometer.CurrentBatchID != graviton.EmptyID() {
 		t.Errorf("Replaced hydrometer batch ID not reset")
@@ -77,7 +77,7 @@ func TestAddBatch(t *testing.T) {
 		t.Errorf("Unable to add new batch: %v\n", err)
 	}
 
-	blueHydrometer, greenHydrometer, _, _ := getTestObjects()
+	blueHydrometer, greenHydrometer, _, _ := GetTestObjects()
 
 	err = addedBatch.SetHydrometer(greenHydrometer)
 
@@ -98,7 +98,7 @@ func TestAddGravityReading(t *testing.T) {
 	graviton.InitTest()
 	generateTestData()
 
-	_, _, flueSeason, _ := getTestObjects()
+	_, _, flueSeason, _ := GetTestObjects()
 
 	newReadingID := bson.NewObjectId()
 	flueSeason.AddReading(GravityReading{
@@ -140,7 +140,7 @@ func TestHideGravityReading(t *testing.T) {
 	graviton.InitTest()
 	generateTestData()
 
-	_, _, flueSeason, _ := getTestObjects()
+	_, _, flueSeason, _ := GetTestObjects()
 
 	for i, reading := range flueSeason.GravityReadings {
 		if i == 1 {
@@ -165,14 +165,14 @@ func TestFinishBatch(t *testing.T) {
 	graviton.InitTest()
 	generateTestData()
 
-	_, greenHydrometer, flueSeason, hopForward := getTestObjects()
+	_, greenHydrometer, flueSeason, hopForward := GetTestObjects()
 
 	err := flueSeason.FinishBatch()
 	if err != nil {
 		t.Errorf("Error finishing batch")
 	}
 
-	_, greenHydrometer, flueSeason, hopForward = getTestObjects()
+	_, greenHydrometer, flueSeason, hopForward = GetTestObjects()
 
 	if flueSeason.HydrometerID != greenHydrometer.ID {
 		t.Errorf("Didn't keep a record of hydrometer used")

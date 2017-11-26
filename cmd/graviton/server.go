@@ -35,10 +35,10 @@ func main() {
 	e.GET("/api/v1/batches", api.QueryBatches) // returns lightweight batches: last reading and attenuation only
 	e.POST("/api/v1/batches", api.NewBatch)    // takes a BatchParam
 
-	e.GET("/api/v1/batches/:id", api.GetBatch)            // returns full batch, including all readings
-	e.PUT("/api/v1/batches/:id", api.EditBatch)           // takes a BatchParam, use to start batches
-	e.POST("/api/v1/batch/:id/finish", api.FinishBatch)   // sets a batch inactive, releasing its hydrometer and stopping readings
-	e.POST("/api/v1/batch/:id/archive", api.ArchiveBatch) // sets a batch archived, removing it from default search results
+	e.GET("/api/v1/batches/:id", api.GetBatch)              // returns full batch, including all readings
+	e.PUT("/api/v1/batches/:id", api.EditBatch)             // takes a BatchParam, use to start batches
+	e.POST("/api/v1/batch/:id/finish", api.FinishBatch)     // sets a batch inactive, releasing its hydrometer and stopping readings
+	e.DELETE("/api/v1/batch/:id/archive", api.ArchiveBatch) // sets a batch archived, removing it from default search results
 
 	// Called by hydrometers; the API finds the correct
 	// batch by getting the correct hydrometer.

@@ -139,6 +139,14 @@ func mergeBatchParam(param *BatchParam, batch *data.Batch) error {
 	})
 }
 
+func mergeHydrometerParam(param *HydrometerParam, hydrometer *data.Hydrometer) error {
+	hydrometer.Name = param.Name
+	hydrometer.Description = param.Description
+	hydrometer.Archived = param.Archived
+
+	return hydrometer.Save()
+}
+
 type HydrometerReading struct {
 	HydrometerName string  `json:"name"`
 	Gravity        float64 `json:"gravity"`
@@ -150,6 +158,7 @@ type Hydrometer struct {
 	ID             bson.ObjectId `json:"id,omitempty"`
 	Name           string        `json:"name"`
 	Description    string        `json:"description"`
+	Archived       bool          `json:"archived"`
 	CurrentBatchID bson.ObjectId `json:"batch"`
 }
 
@@ -157,6 +166,7 @@ type HydrometerParam struct {
 	ID          bson.ObjectId `json:"id,omitempty" bson:"id,omitempty"`
 	Name        string        `bson:"name" json:"name"`
 	Description string        `bson:"description" json:"description"`
+	Archived    bool          `bson:"archived" json:"archived"`
 }
 
 func convertDatabaseHydrometers(h []*data.Hydrometer) ([]*Hydrometer, error) {
@@ -179,6 +189,7 @@ func convertDatabaseHydrometer(h *data.Hydrometer) (*Hydrometer, error) {
 		Name:           h.Name,
 		Description:    h.Description,
 		CurrentBatchID: h.CurrentBatchID,
+		Archived:       h.Archived,
 	}
 	return converted, nil
 }
@@ -188,6 +199,11 @@ func convertHydrometerParam(h *HydrometerParam) (*data.Hydrometer, error) {
 		ID:          h.ID,
 		Name:        h.Name,
 		Description: h.Description,
+		Archived:    h.Archived,
+	}
+
+	if hydrometer.ID == "" {
+		hydrometer.ID = bson.NewObjectId()
 	}
 	return hydrometer, nil
 }

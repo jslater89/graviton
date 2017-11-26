@@ -125,13 +125,7 @@ func EditBatch(c echo.Context) error {
 		return c.JSON(400, bson.M{"error": "invalid input"})
 	}
 
-	batch, err := convertBatchParam(batchParam)
-
-	if err != nil {
-		return c.JSON(400, bson.M{"error": "invalid batch object"})
-	}
-
-	batch, err = data.SingleBatch(bson.M{"_id": bsonID})
+	batch, err := data.SingleBatch(bson.M{"_id": bsonID})
 
 	if err != nil {
 		graviton.Logger.Warn("Batch not found", zap.String("ID", bsonID.Hex()))
@@ -143,7 +137,7 @@ func EditBatch(c echo.Context) error {
 
 	if err != nil {
 		graviton.Logger.Warn("Batch merge failed", zap.Error(err))
-		return c.JSON(400, bson.M{"error": err.Error()})
+		return c.JSON(502, bson.M{"error": err.Error()})
 	}
 
 	apiBatch, err := convertDatabaseBatch(batch, false)

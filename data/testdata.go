@@ -124,7 +124,7 @@ func generateTestData() {
 	}
 }
 
-func getTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {
+func GetTestObjects() (*Hydrometer, *Hydrometer, *Batch, *Batch) {
 	blueHydrometer := &Hydrometer{}
 	greenHydrometer := &Hydrometer{}
 

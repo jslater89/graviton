@@ -20,7 +20,7 @@ func QueryHydrometers(c echo.Context) error {
 
 	parseHydrometerQuery(c, query)
 
-	hydrometers, err := data.QueryHydrometers(bson.M{})
+	hydrometers, err := data.QueryHydrometers(query)
 
 	if err != nil {
 		c.String(502, "database query failed")
@@ -120,7 +120,43 @@ func EditHydrometer(c echo.Context) error {
 		return nil
 	}
 
-	return nil
+	id := c.Param("id")
+
+	if !bson.IsObjectIdHex(id) {
+		return c.JSON(400, bson.M{"error": "bad object id"})
+	}
+
+	bsonID := bson.ObjectIdHex(id)
+
+	hydrometerParam := &HydrometerParam{}
+	err := c.Bind(hydrometerParam)
+	if err != nil {
+		graviton.Logger.Warn("Invalid input", zap.Error(err))
+		return c.JSON(400, bson.M{"error": "invalid input"})
+	}
+
+	hydrometer, err := data.SingleHydrometer(bson.M{"_id": bsonID})
+
+	if err != nil {
+		graviton.Logger.Warn("Hydrometer not found", zap.String("ID", bsonID.Hex()))
+		return c.JSON(400, bson.M{"error": err.Error()})
+	}
+
+	err = mergeHydrometerParam(hydrometerParam, hydrometer)
+
+	if err != nil {
+		graviton.Logger.Warn("Hydrometer merge failed", zap.Error(err))
+		return c.JSON(502, bson.M{"error": err.Error()})
+	}
+
+	apiHydrometer, err := convertDatabaseHydrometer(hydrometer)
+
+	if err != nil {
+		graviton.Logger.Warn("Hydrometer conversion failed", zap.Error(err))
+		return c.JSON(502, bson.M{"error": err.Error()})
+	}
+
+	return c.JSON(200, apiHydrometer)
 }
 
 func ArchiveHydrometer(c echo.Context) error {
@@ -128,7 +164,48 @@ func ArchiveHydrometer(c echo.Context) error {
 		return nil
 	}
 
-	return nil
+	id := c.Param("id")
+
+	if !bson.IsObjectIdHex(id) {
+		return c.JSON(400, bson.M{"error": "bad object id"})
+	}
+
+	bsonID := bson.ObjectIdHex(id)
+
+	hydrometerParam := &HydrometerParam{}
+	err := c.Bind(hydrometerParam)
+	if err != nil {
+		graviton.Logger.Warn("Invalid input", zap.Error(err))
+		return c.JSON(400, bson.M{"error": "invalid input"})
+	}
+
+	hydrometer, err := data.SingleHydrometer(bson.M{"_id": bsonID})
+
+	if err != nil {
+		graviton.Logger.Warn("Hydrometer not found", zap.String("ID", bsonID.Hex()))
+		return c.JSON(400, bson.M{"error": err.Error()})
+	}
+
+	if hydrometer.CurrentBatchID != graviton.EmptyID() {
+		return c.JSON(400, bson.M{"error": "can't archive hydrometer in use"})
+	}
+
+	hydrometer.Archived = true
+	err = hydrometer.Save()
+
+	if err != nil {
+		graviton.Logger.Warn("Unable to save hydrometer", zap.Error(err))
+		return c.JSON(502, bson.M{"error": err.Error()})
+	}
+
+	apiHydrometer, err := convertDatabaseHydrometer(hydrometer)
+
+	if err != nil {
+		graviton.Logger.Warn("Hydrometer conversion failed", zap.Error(err))
+		return c.JSON(502, bson.M{"error": err.Error()})
+	}
+
+	return c.JSON(200, apiHydrometer)
 }
 
 func parseHydrometerQuery(c echo.Context, query bson.M) {
@@ -136,6 +213,12 @@ func parseHydrometerQuery(c echo.Context, query bson.M) {
 
 	if nameParam != "" {
 		query["name"] = nameParam
+	}
+
+	archivedParam := c.QueryParam("archived")
+
+	if archivedParam == "true" {
+		query["archived"] = true
 	}
 
 	return
