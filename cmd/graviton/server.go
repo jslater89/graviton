@@ -9,7 +9,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/acme/autocert"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -62,8 +61,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	if config.UseSSL {
-		e.AutoTLSManager.Cache = autocert.DirCache(config.SSLCache)
-		e.StartAutoTLS(config.ServerAddress)
+		e.StartTLS(config.ServerAddress, config.SSLCert, config.SSLKey)
 	} else {
 		e.Start(config.ServerAddress)
 	}

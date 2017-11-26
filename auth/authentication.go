@@ -40,14 +40,7 @@ func GetStore() *mongostore.MongoStore {
 func InitOauth(dbAddress string, dbName string) {
 	config := config.GetConfig()
 
-	url := ""
-	if config.UseSSL {
-		url = "https://"
-	} else {
-		url = "http://"
-	}
-
-	url += config.ServerAddress + "/api/v1/auth/google/callback"
+	url := config.ServerRedirect + "/api/v1/auth/google/callback"
 
 	goth.UseProviders(gplus.New(config.GoogleClientID, config.GoogleSecret, url))
 	gothic.GetProviderName = func(*http.Request) (string, error) {

@@ -4,11 +4,10 @@ testMode=false
 # Populate database with fake demo data
 demoData=false
 
-# Use echo AutoTLS (server address must be a domain which maps to your public IP)
+# Use SSL/TLS with the given cert and key files
 useSSL=false
-
-# Where to cache AutoTLS certs
-sslCache = "/var/www/.cache"
+sslCertPath="/path/to/cert"
+sslKeyPath="/path/to/key"
 
 # Where Graviton listens
 serverAddress=":10000"
@@ -28,3 +27,6 @@ corsOrigins = ["http://localhost:8080"]
 # Google auth information
 googleClientId="your_id_here"
 googleSecret="your_secret_here"
+
+# Root for oauth redirects (external server address)
+serverRedirect = "http://localhost:10000"

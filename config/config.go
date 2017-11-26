@@ -11,7 +11,8 @@ type Config struct {
 	TestMode        bool     `mapstructure:"testMode"`
 	DemoData        bool     `mapstructure:"demoData"`
 	UseSSL          bool     `mapstructure:"useSSL"`
-	SSLCache        string   `mapstructure:"sslCache"`
+	SSLCert         string   `mapstructure:"sslCertPath"`
+	SSLKey          string   `mapstructure:"sslKeyPath"`
 	ServerAddress   string   `mapstructure:"serverAddress"`
 	RedirectAddress string   `mapstructure:"redirectAddress"`
 	CorsOrigins     []string `mapstructure:"corsOrigins"`
@@ -19,6 +20,7 @@ type Config struct {
 	DBName          string   `mapstructure:"dbName"`
 	GoogleClientID  string   `mapstructure:"googleClientId"`
 	GoogleSecret    string   `mapstructure:"googleSecret"`
+	ServerRedirect  string   `mapstructure:"serverRedirect"`
 }
 
 func (c Config) GetDBName() string {
@@ -45,13 +47,15 @@ func Load(configOverride *string) error {
 		flag.Bool("testMode", false, "run in test mode (see config.toml comments)")
 		flag.Bool("demoData", false, "ensure demo data exists (see config.toml comments)")
 		flag.Bool("useSSL", false, "whether to use echo AutoTLS")
-		flag.String("sslCache", "/var/www/.cache", "where to store SSL certs")
+		flag.String("sslCertPath", "/path/to/cert", "SSL cert path")
+		flag.String("sslKeyPath", "/path/to/key", "SSL key path")
 		flag.String("serverAddress", "localhost:10000", "address to run the graviton service on")
 		flag.String("mongoAddress", "localhost", "address of the database instance to connect to")
 		flag.String("dbName", "graviton", "mongo db name to use")
 		flag.String("googleClientId", "", "google client ID for oauth2")
 		flag.String("googleSecret", "", "google secret for oauth2")
 		flag.String("redirectAddress", "http://localhost:8080/#/authenticated", "redirect address to receive bearer after oauth")
+		flag.String("serverRedirect", "http://localhost", "redirect address to receive bearer after oauth")
 
 		configFile = flag.String("configFile", "config.toml", "the config file to use")
 		pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
