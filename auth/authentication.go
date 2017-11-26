@@ -38,7 +38,18 @@ func GetStore() *mongostore.MongoStore {
 }
 
 func InitOauth(dbAddress string, dbName string) {
-	goth.UseProviders(gplus.New(config.GetConfig().GoogleClientID, config.GetConfig().GoogleSecret, "http://localhost:10000/api/v1/auth/google/callback"))
+	config := config.GetConfig()
+
+	url := ""
+	if config.UseSSL {
+		url = "https://"
+	} else {
+		url = "http://"
+	}
+
+	url += config.ServerAddress + "/api/v1/auth/google/callback"
+
+	goth.UseProviders(gplus.New(config.GoogleClientID, config.GoogleSecret, url))
 	gothic.GetProviderName = func(*http.Request) (string, error) {
 		return "gplus", nil
 	}

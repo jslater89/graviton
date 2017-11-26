@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jslater89/graviton"
+	"github.com/jslater89/graviton/config"
 	"go.uber.org/zap"
 
 	"github.com/labstack/echo"
@@ -18,7 +19,7 @@ func GoogleAuthLogin(c echo.Context) error {
 		session, err := getSession(token)
 		if err == nil && checkSessionExpiration(session) {
 			c.SetCookie(getCookie(session.Token))
-			return c.Redirect(307, "http://localhost:8080/#/authenticated?bearer="+session.Token)
+			return c.Redirect(307, config.GetConfig().RedirectAddress+"?bearer="+session.Token)
 		}
 	}
 
@@ -40,7 +41,7 @@ func GoogleAuthCallback(c echo.Context) error {
 		return c.JSON(502, bson.M{"error": "could not fetch user"})
 	}
 	c.SetCookie(getCookie(sessionID.Hex()))
-	return c.Redirect(307, "http://localhost:8080/#/authenticated?bearer="+sessionID.Hex())
+	return c.Redirect(307, config.GetConfig().RedirectAddress+"?bearer="+sessionID.Hex())
 }
 
 func GetSelf(c echo.Context) error {

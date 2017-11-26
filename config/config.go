@@ -8,12 +8,17 @@ import (
 )
 
 type Config struct {
-	TestMode       bool   `mapstructure:"test_mode"`
-	DemoData       bool   `mapstructure:"demo_data"`
-	MongoAddress   string `mapstructure:"mongo_address"`
-	DBName         string `mapstructure:"db_name"`
-	GoogleClientID string `mapstructure:"google_client_id"`
-	GoogleSecret   string `mapstructure:"google_secret"`
+	TestMode        bool     `mapstructure:"testMode"`
+	DemoData        bool     `mapstructure:"demoData"`
+	UseSSL          bool     `mapstructure:"useSSL"`
+	SSLCache        string   `mapstructure:"sslCache"`
+	ServerAddress   string   `mapstructure:"serverAddress"`
+	RedirectAddress string   `mapstructure:"redirectAddress"`
+	CorsOrigins     []string `mapstructure:"corsOrigins"`
+	MongoAddress    string   `mapstructure:"mongoAddress"`
+	DBName          string   `mapstructure:"dbName"`
+	GoogleClientID  string   `mapstructure:"googleClientId"`
+	GoogleSecret    string   `mapstructure:"googleSecret"`
 }
 
 func (c Config) GetDBName() string {
@@ -37,19 +42,22 @@ func Load(configOverride *string) error {
 
 	var configFile *string
 	if flag.Lookup("test_mode") == nil {
-		flag.Bool("test_mode", false, "run in test mode (see config.toml comments)")
-		flag.Bool("demo_data", false, "ensure demo data exists (see config.toml comments)")
-		flag.String("server_address", ":10000", "address to run the photo service on")
-		flag.String("mongo_address", "localhost", "address of the database instance to connect to")
-		flag.String("db_name", "graviton", "mongo db name to use")
-		flag.String("google_client_id", "", "google client ID for oauth2")
-		flag.String("google_secret", "", "google secret for oauth2")
+		flag.Bool("testMode", false, "run in test mode (see config.toml comments)")
+		flag.Bool("demoData", false, "ensure demo data exists (see config.toml comments)")
+		flag.Bool("useSSL", false, "whether to use echo AutoTLS")
+		flag.String("sslCache", "/var/www/.cache", "where to store SSL certs")
+		flag.String("serverAddress", "localhost:10000", "address to run the graviton service on")
+		flag.String("mongoAddress", "localhost", "address of the database instance to connect to")
+		flag.String("dbName", "graviton", "mongo db name to use")
+		flag.String("googleClientId", "", "google client ID for oauth2")
+		flag.String("googleSecret", "", "google secret for oauth2")
+		flag.String("redirectAddress", "http://localhost:8080/#/authenticated", "redirect address to receive bearer after oauth")
 
-		configFile = flag.String("config_file", "config.toml", "the config file to use")
+		configFile = flag.String("configFile", "config.toml", "the config file to use")
 		pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	}
 
-	if configFlag := flag.Lookup("config_file"); configFlag != nil {
+	if configFlag := flag.Lookup("configFile"); configFlag != nil {
 		stringValue := configFlag.Value.String()
 		configFile = &stringValue
 	}

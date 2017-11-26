@@ -1,7 +1,30 @@
-test_mode=false
-demo_data=false
-server_address=":10000"
-mongo_address="localhost"
-db_name="graviton"
-google_client_id="your_id_here"
-google_secret="your_secret_here"
+# For tests only
+testMode=false
+
+# Populate database with fake demo data
+demoData=false
+
+# Use echo AutoTLS (server address must be a domain which maps to your public IP)
+useSSL=false
+
+# Where to cache AutoTLS certs
+sslCache = "/var/www/.cache"
+
+# Where Graviton listens
+serverAddress=":10000"
+
+# Where to redirect after an authentication
+redirectAddress = "http://localhost:8080/#/authenticated"
+
+# Address for MongoDB
+mongoAddress="localhost"
+
+# MongoDB database name
+dbName="graviton"
+
+# CORS origins to allow
+corsOrigins = ["http://localhost:8080"]
+
+# Google auth information
+googleClientId="your_id_here"
+googleSecret="your_secret_here"

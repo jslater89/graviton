@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/acme/autocert"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -54,12 +55,18 @@ func main() {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		Skipper:      middleware.DefaultCORSConfig.Skipper,
-		AllowOrigins: []string{"http://localhost:8080"},
+		AllowOrigins: config.CorsOrigins,
 		AllowMethods: middleware.DefaultCORSConfig.AllowMethods,
 	}))
 	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
-	e.Start("localhost:10000")
+	if config.UseSSL {
+		e.AutoTLSManager.Cache = autocert.DirCache(config.SSLCache)
+		e.StartAutoTLS(config.ServerAddress)
+	} else {
+		e.Start(config.ServerAddress)
+	}
 }
 
 func ensureDemoData() {
