@@ -144,10 +144,18 @@ func (b *Batch) AddReading(r GravityReading) error {
 		if r.Date.Before(reading.Date) {
 			break
 		}
+
+		if i == len(b.GravityReadings) - 1 {
+			insertBefore = -1;
+		}
 	}
 
-	readings := append(b.GravityReadings[:insertBefore], r)
-	readings = append(readings, b.GravityReadings[insertBefore:]...)
+	var readings []GravityReading
+	if insertBefore > 0 {
+		readings = append(b.GravityReadings[:insertBefore], append([]GravityReading{r}, b.GravityReadings[insertBefore:]...)...)
+	} else {
+		readings = append(b.GravityReadings, r)
+	}
 
 	b.GravityReadings = readings
 	b.LastUpdate = time.Now()
