@@ -109,7 +109,8 @@ func getOrCreateAPIKey(reset bool) string {
 	if n == 0 || reset {
 		db.apiKeyCollection.RemoveAll(bson.M{})
 
-		keyBytes := []byte(generateSessionToken() + generateSessionToken() + generateSessionToken())
+		// 24 bytes == 48 hex characters
+		keyBytes := []byte(generateSessionToken() + generateSessionToken())
 		keyString := hex.EncodeToString(keyBytes)
 
 		key := apiDoc{
