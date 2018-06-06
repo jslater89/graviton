@@ -41,7 +41,7 @@ func main() {
 	e.DELETE("/api/v1/batch/:id/archive", api.ArchiveBatch) // sets a batch archived, removing it from default search results
 
 	// Called by hydrometers; the API finds the correct
-	// batch by getting the correct hydrometer.
+	// batch by matching the hydrometer name.
 	e.POST("/api/v1/reading", api.AddReading)
 
 	e.GET("/api/v1/hydrometers", api.QueryHydrometers)
